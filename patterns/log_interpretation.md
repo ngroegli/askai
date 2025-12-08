@@ -131,22 +131,4 @@ model:
   model_name: anthropic/claude-3.7-sonnet
   temperature: 0.7
   max_tokens: 2000
-
-format_instructions: |
-  When analyzing log files:
-
-  1. First identify common patterns and structure in the log entries
-  2. Look for anomalies, outliers, or unusual entries that deviate from patterns
-  3. Calculate frequency distributions of different log types
-  4. Provide both structured analysis data and a human-readable summary
-
-  Include the following in your analysis:
-  - Pattern identification with examples and frequency
-  - Anomaly detection with line numbers and reasons
-  - Visualizations of log distribution when helpful
-  - Timeline analysis if timestamps are present
-  - Clear summaries of significant findings
-
-  Your analysis should help users quickly understand the log content and identify
-  potential issues or areas that need further investigation.
 ```

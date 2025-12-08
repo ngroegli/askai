@@ -7,12 +7,41 @@ import base64
 import itertools
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
 import tempfile
 import time
+from html.parser import HTMLParser
 from termcolor import cprint
+
+try:
+    import requests
+except ImportError:
+    requests = None
+
+
+class TextExtractor(HTMLParser):
+    """HTML parser for extracting text content from web pages."""
+
+    def __init__(self):
+        super().__init__()
+        self.text_parts = []
+        self.skip_tags = {'script', 'style', 'meta', 'link', 'noscript'}
+        self.current_tag = None
+
+    def handle_starttag(self, tag, attrs):
+        self.current_tag = tag.lower()
+
+    def handle_endtag(self, tag):
+        self.current_tag = None
+
+    def handle_data(self, data):
+        if self.current_tag not in self.skip_tags:
+            text = data.strip()
+            if text:
+                self.text_parts.append(text)
 
 
 def tqdm_spinner(stop_event):
@@ -142,21 +171,43 @@ def _read_file_content(file_path):
         return None
 
 
-def build_format_instruction(response_format):
+def build_format_instruction(response_format, model_name=None):
     """
     Build format instruction for AI based on user's format choice.
 
     Args:
         response_format (str): The desired response format ('rawtext', 'json', 'md')
+        model_name (str, optional): The model being used, for model-specific instructions
 
     Returns:
         str: The format instruction to add to the AI prompt
     """
     if response_format == "json":
-        return (
-            "\n\nIMPORTANT: Provide your response in valid JSON format only. "
-            "Do not include any text before or after the JSON."
+        instruction = (
+            "\n\n⚠️⚠️⚠️ CRITICAL OUTPUT FORMAT INSTRUCTIONS ⚠️⚠️⚠️\n\n"
+            "Your response MUST be in valid JSON format only.\n\n"
+            "CRITICAL REQUIREMENTS:\n"
+            "1. Return ONLY valid JSON - nothing else\n"
+            "2. DO NOT wrap your response in code blocks or triple backticks\n"
+            "3. DO NOT include any explanation text before or after the JSON\n"
+            "4. The JSON must be properly formatted and valid\n"
+            "5. Structure your JSON response appropriately for the content\n\n"
+            "This is the most important instruction: DO NOT USE ```json or ``` around your response."
         )
+
+        # Add extra emphasis for haiku model which tends to not follow instructions well
+        if model_name and "haiku" in model_name.lower():
+            instruction += (
+                "\n\n🚨 EXTRA EMPHASIS FOR CLAUDE-3-HAIKU 🚨\n"
+                "You are Claude-3-Haiku and you MUST follow format instructions precisely.\n"
+                "The user specifically requested JSON format. You MUST respond with ONLY JSON.\n"
+                "Start your response with { and end with }. NO OTHER TEXT ALLOWED.\n"
+                "Example valid response: {\"key\": \"value\"}\n"
+                "Example INVALID response: Here is the JSON: {\"key\": \"value\"}"
+            )
+
+        return instruction
+
     if response_format == "md":
         return "\n\nIMPORTANT: Format your response using Markdown syntax for better readability."
     # rawtext (default) - no special formatting instruction needed
@@ -350,15 +401,43 @@ def generate_output_format_template(pattern_outputs):
         return ""
 
     try:
-        # Build a template based on the expected outputs
+        # Build a JSON format template based on the expected outputs
         template_parts = []
-        template_parts.append("Please structure your response according to the following format:")
+        template_parts.append("You MUST return your response as valid JSON in the following structure:")
+        template_parts.append("")
+        template_parts.append("{")
+        template_parts.append('  "results": {')
 
+        # Add each output field with type hints
+        output_fields = []
         for output in pattern_outputs:
-            output_type = getattr(output, 'type', 'unknown')
-            output_description = getattr(output, 'description', f'{output_type} output')
+            output_name = getattr(output, 'name', 'unknown')
+            output_type = getattr(output, 'type', 'text')
+            output_description = getattr(output, 'description', '')
 
-            template_parts.append(f"- {output_type.title()}: {output_description}")
+            # Generate type hint based on output type
+            type_hint = _get_type_hint_for_output(output_type)
+
+            field_line = f'    "{output_name}": {type_hint}'
+            if output_description:
+                field_line += f'  // {output_description}'
+            output_fields.append(field_line)
+
+        template_parts.append(",\n".join(output_fields))
+        template_parts.append("  }")
+        template_parts.append("}")
+        template_parts.append("")
+
+        # Add specific instructions for each output type
+        template_parts.append("Field requirements:")
+        for output in pattern_outputs:
+            output_name = getattr(output, 'name', 'unknown')
+            output_type = getattr(output, 'type', 'text')
+            output_description = getattr(output, 'description', '')
+
+            requirement = _get_requirement_for_output(output_type, output_description)
+            if requirement:
+                template_parts.append(f"- {output_name}: {requirement}")
 
         return "\n".join(template_parts)
 
@@ -370,3 +449,88 @@ def generate_output_format_template(pattern_outputs):
         )
 
         return ""
+
+
+def _get_type_hint_for_output(output_type):
+    """Get JSON type hint for an output type."""
+    type_mapping = {
+        'json': '{ ... }',
+        'markdown': '"markdown string"',
+        'text': '"plain text string"',
+        'html': '"HTML string"',
+        'code': '"code string"',
+        'command': '"command string"',
+        'list': '[ ... ]',
+        'table': '[ ... ]'
+    }
+    return type_mapping.get(
+        output_type.lower() if hasattr(output_type, 'lower') else str(output_type).lower(),
+        '"string"'
+    )
+
+
+def _get_requirement_for_output(output_type, description):
+    """Get specific requirement text for an output field."""
+    output_type_str = output_type.lower() if hasattr(output_type, 'lower') else str(output_type).lower()
+
+    if output_type_str == 'json':
+        return "A valid JSON object/array (not a string)"
+    if output_type_str == 'markdown':
+        return "Markdown formatted text with proper headings, lists, and formatting"
+    if output_type_str == 'command':
+        return "Plain command text without backticks, quotes, or markdown formatting"
+    if output_type_str == 'code':
+        return "Plain code without markdown code block wrappers"
+    if output_type_str == 'html':
+        return "Valid HTML without markdown code block wrappers"
+    return description if description else "Plain text content"
+
+
+def fetch_url_content(url: str) -> tuple[str | None, str | None]:
+    """
+    Fetch content from a URL.
+
+    Args:
+        url: The URL to fetch content from
+
+    Returns:
+        Tuple of (content, error_message). If successful, returns (content, None).
+        If failed, returns (None, error_message).
+    """
+    if requests is None:
+        return None, "requests library not available"
+
+    try:
+        # Add user agent to avoid being blocked
+        headers = {
+            'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                          '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
+        }
+
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        # Check content type
+        content_type = response.headers.get('content-type', '').lower()
+
+        if 'text/html' in content_type:
+            # Parse HTML and extract text content
+            extractor = TextExtractor()
+            extractor.feed(response.text)
+
+            # Join text parts and clean up whitespace
+            text = '\n'.join(extractor.text_parts)
+            # Remove excessive whitespace
+            text = re.sub(r'\n\s*\n', '\n\n', text)
+            text = text.strip()
+
+            return text, None
+        if 'text/plain' in content_type or 'text/' in content_type:
+            # Return plain text content
+            return response.text, None
+        return None, f"Unsupported content type: {content_type}"
+
+    except requests.exceptions.RequestException as e:
+        return None, f"Failed to fetch URL: {str(e)}"
+    except Exception as e:
+        return None, f"Error processing URL content: {str(e)}"

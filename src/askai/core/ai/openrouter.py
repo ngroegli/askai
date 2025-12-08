@@ -290,21 +290,38 @@ class OpenRouterClient:
         """
         if response.ok:
             response_data = response.json()
-            choice = response_data["choices"][0]
-            message = choice["message"]
 
-            # Log web search annotations if present
-            if "annotations" in message:
-                logger.debug(json.dumps({
-                    "log_message": "Received web search annotations",
-                    "annotation_count": len(message["annotations"])
+            # Check if response has choices (normal response) or error (API error with 200 status)
+            if "choices" in response_data:
+                choice = response_data["choices"][0]
+                message = choice["message"]
+
+                # Log web search annotations if present
+                if "annotations" in message:
+                    logger.debug(json.dumps({
+                        "log_message": "Received web search annotations",
+                        "annotation_count": len(message["annotations"])
+                    }))
+
+                return {
+                    "content": message["content"],
+                    "annotations": message.get("annotations", []),
+                    "full_response": response_data
+                }
+            if "error" in response_data:
+                # API returned an error with 200 status
+                error_info = response_data["error"]
+                logger.error(json.dumps({
+                    "log_message": "API returned error in response body",
+                    "error": error_info
                 }))
-
-            return {
-                "content": message["content"],
-                "annotations": message.get("annotations", []),
-                "full_response": response_data
-            }
+                raise Exception(f"OpenRouter API error: {error_info.get('message', str(error_info))}")
+            # Unexpected response format
+            logger.error(json.dumps({
+                "log_message": "Unexpected API response format",
+                "response": response_data
+            }))
+            raise Exception(f"Unexpected API response format: {response_data}")
 
         logger.critical(
             json.dumps({"log_message": "API Error %d: %s"}) % (response.status_code, response.text)
@@ -381,8 +398,16 @@ class OpenRouterClient:
         # Step 2: Detect content types in messages
         content_info = self._detect_content_types(messages)
 
-        # Step 3: Configure payload based on content types (if no explicit model_config provided)
-        if content_info["has_multimodal"] and not model_config:
+        # Step 3: Configure payload based on content types
+        # Apply PDF/multimodal handling when content detected and either:
+        # 1. No explicit model config provided, OR
+        # 2. Model config provided but using default model that may not support PDFs
+        should_apply_content_based_config = (
+            content_info["has_multimodal"] and
+            (not model_config or (model_config and model_config.model_name == self.config.get("default_model")))
+        )
+
+        if should_apply_content_based_config:
             if content_info["has_pdf"]:
                 self._configure_pdf_handling(payload)
 

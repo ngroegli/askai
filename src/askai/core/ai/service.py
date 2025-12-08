@@ -66,9 +66,19 @@ class AIService:
                 "log_message": "Using explicit model configuration",
                 "model": model_name
             }))
+            # Create a proper configuration with defaults preserved
             return ModelConfiguration(
                 provider=ModelProvider.OPENROUTER,
-                model_name=model_name
+                model_name=model_name,
+                temperature=0.7,  # Use same defaults as in ModelConfiguration dataclass
+                max_tokens=None,
+                stop_sequences=None,
+                custom_parameters=None,
+                web_search=False,
+                web_search_context="medium",
+                web_plugin=False,
+                web_max_results=5,
+                web_search_prompt=None
             )
 
         # Priority 3: Global configuration
@@ -78,7 +88,16 @@ class AIService:
         }))
         return ModelConfiguration(
             provider=ModelProvider.OPENROUTER,
-            model_name=config["default_model"]
+            model_name=config["default_model"],
+            temperature=0.7,  # Use same defaults as in ModelConfiguration dataclass
+            max_tokens=None,
+            stop_sequences=None,
+            custom_parameters=None,
+            web_search=False,
+            web_search_context="medium",
+            web_plugin=False,
+            web_max_results=5,
+            web_search_prompt=None
         )
 
     def get_ai_response(self, messages, model_name=None, *, pattern_id=None,
@@ -127,8 +146,9 @@ class AIService:
             if web_search_options is None and web_plugin_config is None:
                 web_config = config.get('web_search', {})
 
-                # Enable web search if explicitly requested for URL or globally enabled
-                if enable_url_search or web_config.get('enabled', False):
+                # Enable web search only when explicitly requested for URL input
+                # Global 'enabled' setting just configures defaults but doesn't auto-enable
+                if enable_url_search:
                     if web_config.get('method', 'plugin') == 'plugin':
                         web_plugin_config = {
                             "max_results": web_config.get('max_results', 5)

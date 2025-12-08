@@ -23,28 +23,40 @@ class ContentExtractor:
         Returns:
             Dict containing extracted structured data
         """
+        logger.info("extract_structured_data called with response type: %s", type(response).__name__)
+
         if isinstance(response, dict):
             if 'content' in response:
                 text = response['content']
+                logger.info("Extracting from response['content'] (length: %d)", len(text) if text else 0)
             elif 'results' in response:
                 # Response already contains parsed results
+                logger.info("Response already contains 'results' key, returning directly")
                 return response['results']
             else:
                 text = str(response)
+                logger.info("Response is dict but no 'content' or 'results', converting to string")
         else:
             text = str(response)
+            logger.info("Response is string (length: %d)", len(text))
 
         structured_data = {}
 
         # Try to extract JSON first
         json_data = self._extract_json_from_text(text)
         if json_data:
+            logger.info("Extracted JSON data with keys: %s", list(json_data.keys()))
             structured_data.update(json_data)
+        else:
+            logger.warning("No JSON data extracted from text")
 
         # Extract specific content types
         pattern_data = self._extract_content_by_patterns(text)
+        if pattern_data:
+            logger.info("Extracted pattern data with keys: %s", list(pattern_data.keys()))
         structured_data.update(pattern_data)
 
+        logger.info("Returning structured_data with keys: %s", list(structured_data.keys()))
         return structured_data
 
     def _extract_json_from_text(self, text: str) -> Optional[Dict]:
@@ -66,21 +78,39 @@ class ContentExtractor:
 
     def _try_direct_json_parse(self, text: str) -> Optional[Dict]:
         """Try to parse text as direct JSON with nested checks."""
+        # First try to extract JSON from markdown code blocks
+        json_block_patterns = [
+            r'```json\s*\n(.*?)\n```',
+            r'```\s*\n(\{.*?\})\s*\n```',
+        ]
+
+        for pattern in json_block_patterns:
+            matches = re.findall(pattern, text, re.DOTALL)
+            if matches:
+                text = matches[0].strip()
+                logger.info("Extracted JSON from markdown code block")
+                break
+
         try:
             parsed = json.loads(text.strip())
+            logger.info("Successfully parsed JSON, checking for 'results' key")
 
             # Check for nested 'results' key
             if isinstance(parsed, dict) and 'results' in parsed:
+                logger.info("Found 'results' key in parsed JSON, returning results content")
                 return parsed['results']
 
             # Check for nested JSON strings in values
             if isinstance(parsed, dict):
                 nested = self._extract_nested_json_strings(parsed)
                 if nested is not None:
+                    logger.info("Found nested JSON in string values")
                     return nested
 
+            logger.info("Returning parsed JSON as-is (no 'results' key found)")
             return parsed
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            logger.debug("JSON decode failed: %s", str(e))
             return None
 
     def _extract_nested_json_strings(self, parsed_dict: Dict) -> Optional[Dict]:
@@ -106,7 +136,12 @@ class ContentExtractor:
         """
         extracted = {}
 
-        # Define extraction patterns
+        # First, extract pattern output sections (e.g., LOG_ANALYSIS:, FORMATTED_SUMMARY:)
+        pattern_outputs = self._extract_pattern_outputs(text)
+        if pattern_outputs:
+            extracted.update(pattern_outputs)
+
+        # Define extraction patterns for code blocks
         patterns = {
             'html': [
                 r'```html\s*\n(.*?)\n```',
@@ -144,6 +179,36 @@ class ContentExtractor:
                 extracted[content_type] = content
 
         return extracted
+
+    def _extract_pattern_outputs(self, text: str) -> Dict[str, str]:
+        """Extract pattern output sections from text.
+
+        Looks for uppercase output headers like LOG_ANALYSIS:, FORMATTED_SUMMARY: etc.
+
+        Args:
+            text: Text to extract pattern outputs from
+
+        Returns:
+            Dict mapping lowercase output names to extracted content
+        """
+        pattern_outputs = {}
+
+        # Pattern to match uppercase headers followed by content
+        # This matches headers like LOG_ANALYSIS:, FORMATTED_SUMMARY:, etc.
+        pattern = r'([A-Z_]+):\s*\n(.*?)(?=\n[A-Z_]+:|$)'
+
+        matches = re.findall(pattern, text, re.DOTALL | re.MULTILINE)
+
+        for header, content in matches:
+            # Convert header to lowercase for consistency with pattern definitions
+            output_name = header.lower()
+            cleaned_content = content.strip()
+
+            if cleaned_content:
+                pattern_outputs[output_name] = cleaned_content
+                logger.info("Extracted pattern output '%s' (%d chars)", output_name, len(cleaned_content))
+
+        return pattern_outputs
 
     def _extract_from_code_blocks(
             self,

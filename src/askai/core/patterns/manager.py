@@ -383,9 +383,15 @@ class PatternManager:
             # Parse the YAML content
             config_data = yaml.safe_load(yaml_content)
 
-            # Get just the model configuration part
-            if isinstance(config_data, dict) and 'model' in config_data:
-                return {'model': config_data['model']}
+            # Get the model configuration and format_instructions
+            if isinstance(config_data, dict):
+                result = {}
+                if 'model' in config_data:
+                    result['model'] = config_data['model']
+                if 'format_instructions' in config_data:
+                    result['format_instructions'] = config_data['format_instructions']
+                if result:
+                    return result
 
             return None
         except Exception as e:
@@ -407,11 +413,10 @@ class PatternManager:
             functionality = self._parse_pattern_functionality(content)
             model_config = self._parse_model_configuration(content)
 
-            # Format instructions are now generated dynamically from output definitions
-            # No need to extract from the pattern file
+            # Extract format_instructions from model_config if present
             format_instructions = None
-
-            # The format_instructions will be generated when needed using the output definitions
+            if model_config and 'format_instructions' in model_config:
+                format_instructions = model_config['format_instructions']
 
             # Create complete configuration
             if purpose and functionality:
@@ -552,7 +557,32 @@ class PatternManager:
 
         # Start with provided JSON values
         if input_values:
-            result.update(input_values)
+            # Process each input value with proper type handling
+            for input_name, input_value in input_values.items():
+                if input_name in input_dict:
+                    input_def = input_dict[input_name]
+
+                    # Validate the input value
+                    valid, error = input_def.validate_value(input_value)
+                    if not valid:
+                        print_error_or_warnings(f"Invalid value for '{input_name}': {error}")
+                        return None
+
+                    # Apply type-specific processing
+                    if input_def.input_type == InputType.FILE:
+                        content = self._read_input_file(input_value)
+                        if content is None:
+                            print_error_or_warnings(f"Failed to read file for '{input_name}': {input_value}")
+                            return None
+                        result[input_name] = content
+                    elif input_def.input_type in [InputType.IMAGE_FILE, InputType.PDF_FILE]:
+                        # Store the file path directly for image and PDF files
+                        result[input_name] = input_value
+                    else:
+                        result[input_name] = input_value
+                else:
+                    # Input not defined in pattern, store as-is
+                    result[input_name] = input_value
 
             # Mark inputs from groups as processed
             for input_name in input_values.keys():

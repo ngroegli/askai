@@ -67,10 +67,10 @@ results:
 
       ## Summary
       The image shows a coastal sunset scene with a silhouetted palm tree in the foreground. The sky displays vibrant orange and purple hues reflected in the calm ocean water. Two small boats can be seen on the horizon.
-      
+
       ## Description
       The image shows a coastal sunset scene with a silhouetted palm tree in the foreground. The sky displays vibrant orange and purple hues reflected in the calm ocean water. Two small boats can be seen on the horizon. The composition creates a peaceful, tropical atmosphere typical of vacation destinations.
-      
+
       ## Key Elements Identified
       * Palm tree (silhouette in foreground)
       * Ocean/sea (extending to horizon)
@@ -78,13 +78,13 @@ results:
       * Two small boats (on the horizon)
       * Beach (visible in lower portion)
       * Cloud formations (scattered across the sky)
-      
+
       ## Technical Analysis
       * **Image Type**: Landscape photography
       * **Composition**: Rule of thirds, with horizon line and focal elements
       * **Color Palette**: Warm oranges and purples contrasting with dark silhouettes
       * **Mood**: Peaceful, serene, contemplative
-      
+
       ## Metadata Information
       * **Dimensions**: 1920x1080
       * **Format**: JPEG
@@ -101,27 +101,4 @@ model:
   model_name: anthropic/claude-3.5-sonnet
   temperature: 0.2
   max_tokens: 2000
-  
-format_instructions: |
-  When interpreting images:
-  
-  1. Your response MUST be valid JSON with the following structure:
-     ```json
-     {
-       "detailed_analysis": "Comprehensive markdown formatted analysis of the image"
-     }
-     ```
-  
-  2. The detailed_analysis should be formatted in markdown with these sections:
-     - Summary: A concise summary of what's in the image (1-3 sentences)
-     - Description: A comprehensive description of the image contents
-     - Key Elements Identified: List of main objects, people, text, and visual elements
-     - Technical Analysis: Style, composition, color palette, and artistic elements
-     - Context: Cultural, historical, or other relevant contextual information when applicable
-  
-  3. IMPORTANT: Always wrap your entire response in a JSON code block.
-     The "detailed_analysis" field MUST be present.
-  
-  Your analysis should be thorough, objective, and accessible, helping users understand 
-  all important aspects of the visual content.
 ```

@@ -7,6 +7,7 @@ import json
 import os
 from askai.utils import (get_piped_input, get_file_input, build_format_instruction,
                    encode_file_to_base64, generate_output_format_template)
+from askai.utils.helpers import fetch_url_content
 
 
 class MessageBuilder:  # pylint: disable=too-few-public-methods
@@ -18,7 +19,7 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
 
     def build_messages(self, *, question=None, file_input=None, pattern_id=None,
                       pattern_input=None, response_format="rawtext", url=None, image=None,
-                      pdf=None, image_url=None, pdf_url=None):
+                      pdf=None, image_url=None, pdf_url=None, model_name=None):
         # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         """Builds the message list for OpenRouter.
 
@@ -33,6 +34,7 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
             pdf: Optional path to PDF file
             image_url: Optional URL to an image
             pdf_url: Optional URL to a PDF file
+            model_name: Optional model name for model-specific instructions
 
         Returns:
             tuple: (messages, resolved_pattern_id)
@@ -59,18 +61,41 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                 "content": f"The file content of {file_input} to work with:\n{file_content}"
             })
 
-        # Handle URL input - add as context for web search
+        # Handle URL input - fetch content and add to messages
         if url:
             self.logger.info(json.dumps({
                 "log_message": "URL provided for analysis",
                 "url": url
             }))
-            # If no question provided, default to summarization
-            if not question:
-                question = f"Please analyze and summarize the content from this URL: {url}"
+
+            url_content, error = fetch_url_content(url)
+
+            if url_content:
+                self.logger.info(json.dumps({
+                    "log_message": "URL content fetched successfully",
+                    "content_length": len(url_content)
+                }))
+                messages.append({
+                    "role": "system",
+                    "content": f"The content from URL {url}:\n{url_content}"
+                })
+                # If no question provided, default to summarization
+                if not question:
+                    question = "Please analyze and summarize the content from the provided URL"
             else:
-                # Add URL context to the question
-                question = f"Please analyze the content from this URL: {url}\n\nQuestion: {question}"
+                self.logger.error(json.dumps({
+                    "log_message": "Failed to fetch URL content",
+                    "url": url,
+                    "error": error
+                }))
+                # Fallback to asking AI to reason about the URL
+                if not question:
+                    question = (f"Please analyze and summarize what you know about this URL: {url} "
+                              f"(Note: Content could not be fetched due to: {error})")
+                else:
+                    question = (f"Please analyze this URL: {url} "
+                              f"(Note: Content could not be fetched due to: {error})\n\n"
+                              f"Question: {question}")
 
         # Handle image input - convert to base64 for multimodal message
         if image:
@@ -383,7 +408,7 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
         if pattern_id is None: # Only if no pattern is used -> question logic
             messages.append({
                 "role": "system",
-                "content": build_format_instruction(response_format)
+                "content": build_format_instruction(response_format, model_name)
             })
 
         # Add user question if provided
@@ -647,8 +672,9 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
         if pattern_outputs := pattern_data.get('outputs'):
             # First check if the pattern has its own format_instructions
             custom_format = None
-            if pattern_data.get('configuration') and pattern_data['configuration'].format_instructions:
-                custom_format = pattern_data['configuration'].format_instructions
+            config = pattern_data.get('configuration')
+            if config and hasattr(config, 'format_instructions') and config.format_instructions:
+                custom_format = config.format_instructions
 
             # If no custom format, generate one dynamically
             if not custom_format:

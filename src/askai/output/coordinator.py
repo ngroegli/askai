@@ -277,13 +277,28 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
             Formatted string for display
         """
         if not pattern_contents:
+            # If no content was extracted at all, provide specific missing output information
+            if pattern_outputs:
+                missing_outputs = [output.name for output in pattern_outputs]
+                if len(missing_outputs) == 1:
+                    return f"No content found for output {missing_outputs[0]} - will have empty output"
+                return f"No content found for outputs {', '.join(missing_outputs)} - will have empty output"
             return "No pattern content found"
 
         formatted_parts = []
+        missing_outputs = []
+
         for output in pattern_outputs:
             if output.name in pattern_contents:
                 content = pattern_contents[output.name]
                 formatted_parts.append(f"{output.name.upper()}:\n{content}\n")
+            else:
+                missing_outputs.append(output.name)
+
+        # Add information about missing outputs
+        if missing_outputs:
+            for missing_output in missing_outputs:
+                formatted_parts.append(f"No content found for output {missing_output} - will have empty output\n")
 
         if formatted_parts:
             return "\n".join(formatted_parts)
@@ -300,6 +315,12 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
             Formatted string for display outputs only
         """
         if not pattern_contents:
+            # If no content was extracted at all, provide specific missing output information
+            if pattern_outputs:
+                missing_outputs = [output.name for output in pattern_outputs]
+                if len(missing_outputs) == 1:
+                    return f"No content found for output {missing_outputs[0]} - will have empty output"
+                return f"No content found for outputs {', '.join(missing_outputs)} - will have empty output"
             return "No pattern content found"
 
         # Clear any existing pending commands

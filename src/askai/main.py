@@ -42,7 +42,8 @@ except ImportError:
 
 from askai.utils import load_config, setup_logger, print_error_or_warnings
 
-def _process_pattern_output(resolved_pattern_id, response, *, pattern_manager=None, base_path=None, config=None, logger):
+def _process_pattern_output(resolved_pattern_id, response, *, pattern_manager=None,
+                           base_path=None, config=None, logger):
     """Process pattern output and normalize response format."""
     # Get pattern outputs for auto-execution handling
     if resolved_pattern_id:
@@ -251,7 +252,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             image=None,
             pdf=None,
             image_url=None,
-            pdf_url=None
+            pdf_url=None,
+            model_name=getattr(args, 'model', None)
         )
 
         # Check if message building was cancelled

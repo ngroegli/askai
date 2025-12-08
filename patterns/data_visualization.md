@@ -107,7 +107,7 @@ results:
     group: analysis
     example: |
       # Data Visualization: Sales Performance
-      
+
       ## Visualization
       ```mermaid
       pie
@@ -116,12 +116,12 @@ results:
         "Product B" : 25
         "Product C" : 40
       ```
-      
+
       ## Key Insights
       1. Product C accounts for 40% of total sales
       2. Sales show a seasonal pattern with peaks in Q4
       3. There's a strong correlation (r=0.87) between marketing spend and sales
-      
+
       ## Recommendations
       * Focus marketing efforts on Product C which shows the strongest performance
       * Increase inventory planning for Q4 to meet seasonal demand
@@ -136,16 +136,4 @@ model:
   model_name: anthropic/claude-3.5-sonnet
   temperature: 0.7
   max_tokens: 2000
-  
-format_instructions: |
-  When creating data visualizations:
-  1. First analyze the data to identify key patterns, trends, and insights
-  2. Then create an appropriate visualization based on the data structure and insights
-  3. Include both the raw visualization code and a detailed analysis
-  
-  For your visualization:
-  - Choose appropriate chart types for the data relationships
-  - Use clear labeling and legends
-  - Add meaningful titles and descriptions
-  - Highlight key insights and patterns
 ```

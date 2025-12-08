@@ -5,6 +5,7 @@ Handles standalone question processing separate from patterns.
 
 import json
 import os
+import re
 import sys
 from typing import Tuple
 
@@ -64,7 +65,8 @@ class QuestionProcessor:  # pylint: disable=too-few-public-methods,too-many-inst
             image=context.image,
             pdf=context.pdf,
             image_url=context.image_url,
-            pdf_url=context.pdf_url
+            pdf_url=context.pdf_url,
+            model_name=context.model
         )
 
         # Check if message building was cancelled
@@ -92,6 +94,9 @@ class QuestionProcessor:  # pylint: disable=too-few-public-methods,too-many-inst
             pattern_manager=None,  # No pattern manager needed
             enable_url_search=enable_url_search
         )
+
+        # Post-process response for format compliance
+        response = self._post_process_response(response, context.response_format)
 
         # Store chat history if using persistent chat
         if chat_id:
@@ -185,3 +190,65 @@ class QuestionProcessor:  # pylint: disable=too-few-public-methods,too-many-inst
         )
 
         return formatted_output, created_files
+
+    def _post_process_response(self, response, response_format):
+        """Post-process AI response to ensure format compliance.
+
+        This method attempts to convert responses to the requested format when needed.
+
+        Args:
+            response: AI response (str or dict)
+            response_format: Requested format ('json', 'md', 'rawtext')
+
+        Returns:
+            Post-processed response
+        """
+        # Only post-process for JSON format requests
+        if response_format != 'json':
+            return response
+
+        # Extract text content from response
+        if isinstance(response, dict):
+            text_content = response.get('content', str(response))
+        else:
+            text_content = str(response)
+
+        # Check if response is already valid JSON or contains JSON
+        text_stripped = text_content.strip()
+
+        # If the response starts and ends with curly braces, it's likely already JSON
+        if text_stripped.startswith('{') and text_stripped.endswith('}'):
+            try:
+                json.loads(text_stripped)
+                return response  # Already valid JSON
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        # Also check for JSON within the text (in case there's extra text around it)
+        json_match = re.search(r'\{.*\}', text_stripped, re.DOTALL)
+        if json_match:
+            try:
+                json.loads(json_match.group())
+                return response  # Contains valid JSON, don't modify
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        # Convert plain text to JSON format for any model when JSON is requested
+        try:
+            # Create a basic JSON structure with the text content
+            json_response = {
+                "response": text_stripped,
+                "format": "json",
+                "note": "Response converted to JSON format as requested"
+            }
+
+            # If original response was a dict, preserve structure but fix content
+            if isinstance(response, dict):
+                response_copy = response.copy()
+                response_copy['content'] = json.dumps(json_response, indent=2)
+                return response_copy
+            return json.dumps(json_response, indent=2)
+
+        except Exception:
+            # If all else fails, return original response
+            return response

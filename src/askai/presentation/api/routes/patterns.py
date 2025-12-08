@@ -11,8 +11,9 @@ from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 
 # Add project paths for imports
+# From src/askai/presentation/api/routes/patterns.py, go up 5 levels to project root
 project_root = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", ".."
+    os.path.dirname(__file__), "..", "..", "..", "..", ".."
 ))
 sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, "src"))
@@ -199,48 +200,56 @@ class PatternsList(Resource):
     def _convert_input_to_dict(input_obj):
         """Convert PatternInput object to dictionary."""
         if hasattr(input_obj, 'name'):  # It's a PatternInput object
-            input_type_value = (
-                input_obj.input_type.value
-                if hasattr(input_obj.input_type, 'value')
-                else str(input_obj.input_type)
-            )
-            return {
-                'name': input_obj.name,
-                'description': input_obj.description,
-                'type': input_type_value,
-                'required': input_obj.required,
-                'default': input_obj.default,
-                'options': input_obj.options,
-                'min_value': input_obj.min_value,
-                'max_value': input_obj.max_value,
-                'group': input_obj.group
-            }
+            try:
+                input_type_value = (
+                    input_obj.input_type.value
+                    if hasattr(input_obj, 'input_type') and hasattr(input_obj.input_type, 'value')
+                    else str(getattr(input_obj, 'input_type', 'text'))
+                )
+                return {
+                    'name': input_obj.name,
+                    'description': getattr(input_obj, 'description', ''),
+                    'type': input_type_value,
+                    'required': getattr(input_obj, 'required', True),
+                    'default': getattr(input_obj, 'default', None),
+                    'options': getattr(input_obj, 'options', None),
+                    'min_value': getattr(input_obj, 'min_value', None),
+                    'max_value': getattr(input_obj, 'max_value', None),
+                    'group': getattr(input_obj, 'group', None)
+                }
+            except Exception as e:
+                current_app.logger.error(f"Error converting input object: {e}, obj={input_obj}")
+                raise
         return input_obj  # Already a dictionary
 
     @staticmethod
     def _convert_output_to_dict(output_obj):
         """Convert PatternOutput object to dictionary."""
         if hasattr(output_obj, 'name'):  # It's a PatternOutput object
-            output_type_value = (
-                output_obj.output_type.value
-                if hasattr(output_obj.output_type, 'value')
-                else str(output_obj.output_type)
-            )
-            action_value = (
-                output_obj.action.value
-                if hasattr(output_obj.action, 'value')
-                else str(output_obj.action)
-            )
-            return {
-                'name': output_obj.name,
-                'description': output_obj.description,
-                'type': output_type_value,
-                'required': output_obj.required,
-                'example': output_obj.example,
-                'action': action_value,
-                'write_to_file': output_obj.write_to_file,
-                'group': output_obj.group
-            }
+            try:
+                output_type_value = (
+                    output_obj.output_type.value
+                    if hasattr(output_obj, 'output_type') and hasattr(output_obj.output_type, 'value')
+                    else str(getattr(output_obj, 'output_type', 'text'))
+                )
+                action_value = (
+                    output_obj.action.value
+                    if hasattr(output_obj, 'action') and hasattr(output_obj.action, 'value')
+                    else str(getattr(output_obj, 'action', 'display'))
+                )
+                return {
+                    'name': output_obj.name,
+                    'description': getattr(output_obj, 'description', ''),
+                    'type': output_type_value,
+                    'required': getattr(output_obj, 'required', True),
+                    'example': getattr(output_obj, 'example', None),
+                    'action': action_value,
+                    'write_to_file': getattr(output_obj, 'write_to_file', None),
+                    'group': getattr(output_obj, 'group', None)
+                }
+            except Exception as e:
+                current_app.logger.error(f"Error converting output object: {e}, obj={output_obj}")
+                raise
         return output_obj  # Already a dictionary
 
     @patterns_ns.doc('list_patterns')
@@ -276,11 +285,20 @@ class PatternsList(Resource):
                         # Convert PatternOutput objects to dictionaries for JSON serialization
                         outputs = [self._convert_output_to_dict(out) for out in pattern_content.get('outputs', [])]
 
+                        # Extract description from pattern configuration (Purpose section)
+                        description = ''
+                        if pattern_content.get('configuration'):
+                            config_obj = pattern_content['configuration']
+                            if hasattr(config_obj, 'purpose') and config_obj.purpose:
+                                description = (config_obj.purpose.content
+                                             if hasattr(config_obj.purpose, 'content')
+                                             else str(config_obj.purpose))
+
                         patterns.append({
                             'id': pattern_id,
                             'name': pattern_data.get('name', pattern_id),
-                            'description': pattern_data.get('description', ''),
-                            'category': pattern_data.get('category', 'general'),
+                            'description': description,
+                            'category': 'general',  # Could be extracted from file path or metadata
                             'inputs': inputs,
                             'outputs': outputs
                         })

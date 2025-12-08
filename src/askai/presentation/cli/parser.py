@@ -18,7 +18,10 @@ class CLIParser:
 
     def _setup_argument_parser(self):
         """Setup and configure the argument parser for the CLI."""
-        parser = BannerArgumentParser(description="AskAI - AI assistant for your terminal")
+        parser = BannerArgumentParser(
+            prog="askai",
+            description="AskAI - AI assistant for your terminal"
+        )
 
         # Add version argument
         parser.add_argument('--version', action='version',

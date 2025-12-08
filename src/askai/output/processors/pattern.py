@@ -5,9 +5,10 @@ including categorizing outputs, extracting pattern contents, and managing
 pattern-specific file operations.
 """
 
+import json
 import re
 import logging
-from typing import List, Tuple, Dict, Union, Optional
+from typing import List, Tuple, Dict, Union, Optional, Any
 from pathlib import Path
 
 from askai.core.patterns.outputs import PatternOutput, OutputAction
@@ -131,39 +132,55 @@ class PatternProcessor:
         Returns:
             Dict mapping output names to extracted content
         """
+        text = self._get_response_text(response)
+        structured_data = self._extract_and_log_structured_data(response)
+
         contents = {}
-
-        # Get the response text
-        if isinstance(response, dict):
-            if 'content' in response:
-                text = response['content']
-            else:
-                text = str(response)
-        else:
-            text = str(response)
-
-        # Try to extract structured data first
-        structured_data = self.content_extractor.extract_structured_data(response)
-        logger.debug("Extracted structured data: %s", structured_data)
-
-        # Extract content for each pattern output
         for output in pattern_outputs:
-            content = None
-
-            # First try to get from structured data
-            if output.name in structured_data:
-                content = structured_data[output.name]
-
-            # If not found, try pattern-based extraction
-            if not content:
-                content = self._extract_output_content_from_response(text, output)
-
+            content = self._find_content_for_output(output, structured_data, text)
             if content:
-                contents[output.name] = str(content).strip()
+                contents[output.name] = self._format_content(content)
             else:
                 logger.warning("No content found for output: %s", output.name)
 
         return contents
+
+    def _get_response_text(self, response: Union[str, Dict]) -> str:
+        """Extract text from response object."""
+        if isinstance(response, dict):
+            return response.get('content', str(response))
+        return str(response)
+
+    def _extract_and_log_structured_data(self, response: Union[str, Dict]) -> Dict:
+        """Extract structured data and log the results."""
+        structured_data = self.content_extractor.extract_structured_data(response)
+        logger.debug("Extracted structured data: %s", structured_data)
+        logger.info("Structured data keys: %s", list(structured_data.keys()) if structured_data else "None")
+        return structured_data
+
+    def _find_content_for_output(self, output: PatternOutput, structured_data: Dict, text: str) -> Optional[Any]:
+        """Find content for a specific output from structured data or text."""
+        # First try structured data
+        if output.name in structured_data:
+            content = structured_data[output.name]
+            logger.info("Found content for %s in structured data (type: %s)",
+                       output.name, type(content).__name__)
+            return content
+
+        logger.warning("Output %s not found in structured data keys: %s",
+                      output.name, list(structured_data.keys()))
+
+        # Fall back to pattern-based extraction
+        content = self._extract_output_content_from_response(text, output)
+        if content:
+            logger.info("Found content for %s via pattern extraction", output.name)
+        return content
+
+    def _format_content(self, content: Any) -> str:
+        """Format content as string, handling dicts/lists specially."""
+        if isinstance(content, (dict, list)):
+            return json.dumps(content, indent=2)
+        return str(content).strip()
 
     def _extract_output_content_from_response(self, text: str, output: PatternOutput) -> Optional[str]:
         """Extract content for a specific output from response text.

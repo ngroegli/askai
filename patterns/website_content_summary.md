@@ -109,19 +109,4 @@ model:
   max_tokens: 4000
   web_plugin: true
   web_max_results: 8
-
-format_instructions: |
-  When analyzing website content:
-
-  1. First provide a concise summary of the website's purpose and main content (2-4 sentences)
-  2. Then provide a detailed analysis with the following sections:
-     - Overview: A comprehensive description of the website's purpose and content
-     - Key Information: Important facts, figures, and data points
-     - Main Topics Covered: Primary subject areas with brief descriptions
-     - Key Insights & Takeaways: Important findings and conclusions
-     - Actionable Next Steps: Recommendations based on the content
-     - Sources: Reference to the original URL and analysis date
-
-  Your analysis should be thorough, well-structured, and highlight the most relevant
-  information from the website to help users quickly understand the content.
 ```
