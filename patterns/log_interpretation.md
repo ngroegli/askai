@@ -55,32 +55,6 @@ inputs:
 
 ```yaml
 results:
-  - name: log_analysis
-    description: JSON structured analysis of log patterns and anomalies
-    type: json
-    required: true
-    schema:
-      type: object
-      properties:
-        common_patterns:
-          type: array
-          items:
-            type: object
-            properties:
-              pattern: { type: string }
-              frequency: { type: number }
-              example_lines:
-                type: array
-                items: { type: string }
-        anomalies:
-          type: array
-          items:
-            type: object
-            properties:
-              line_number: { type: number }
-              content: { type: string }
-              reason: { type: string }
-
   - name: formatted_summary
     description: Formatted visualization and summary of log analysis
     type: markdown

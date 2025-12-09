@@ -13,7 +13,8 @@ sys.path.insert(0, os.path.join(project_root, "src"))
 
 # pylint: disable=wrong-import-position
 from askai.core.questions.processor import QuestionProcessor
-from askai.utils import load_config, setup_logger
+from askai.utils.config import load_config
+from askai.utils.logging import setup_logger
 
 # Create namespace
 questions_ns = Namespace('questions', description='Question processing operations')
@@ -53,7 +54,6 @@ class AskQuestion(Resource):
 
     @questions_ns.doc('ask_question')
     @questions_ns.expect(question_request)
-    @questions_ns.marshal_with(question_response)
     def post(self):
         """Process a question and return AI response.
 
@@ -77,7 +77,7 @@ class AskQuestion(Resource):
             logger = setup_logger(config)
 
             # Create question processor
-            base_path = os.path.join(project_root)
+            base_path = "/app"  # Use the app root directory in container
             processor = QuestionProcessor(config, logger, base_path)
 
             # Create mock args object for compatibility
