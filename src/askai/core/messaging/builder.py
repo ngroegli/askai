@@ -5,23 +5,268 @@ Handles construction of messages for AI interaction based on various inputs.
 
 import json
 import os
+from typing import Any, Dict, List, Optional, Tuple
 from askai.utils import (get_piped_input, get_file_input, build_format_instruction,
                    encode_file_to_base64, generate_output_format_template)
 from askai.utils.helpers import fetch_url_content
 
 
-class MessageBuilder:  # pylint: disable=too-few-public-methods
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+# Map file extensions to MIME types for image processing
+MIME_TYPE_MAP = {
+    "jpg": "jpeg",
+    "jpeg": "jpeg",
+    "png": "png",
+    "gif": "gif",
+    "webp": "webp",
+    "bmp": "bmp"
+}
+
+
+class MessageBuilder:
     """Builds messages for AI interaction from various input sources."""
 
-    def __init__(self, pattern_manager, logger):
+    def __init__(self, pattern_manager: Any, logger: Any) -> None:
+        """Initialize MessageBuilder.
+
+        Args:
+            pattern_manager: Pattern manager instance
+            logger: Logger instance
+        """
         self.pattern_manager = pattern_manager
         self.logger = logger
 
-    def build_messages(self, *, question=None, file_input=None, pattern_id=None,
-                      pattern_input=None, response_format="rawtext", url=None, image=None,
-                      pdf=None, image_url=None, pdf_url=None, model_name=None):
+    # ========================================================================
+    # HELPER METHODS
+    # ========================================================================
+
+    def _get_mime_type(self, file_path: str) -> str:
+        """Get MIME type from file extension.
+
+        Args:
+            file_path: Path to the file
+
+        Returns:
+            MIME type string (defaults to 'jpeg' if unknown)
+        """
+        file_ext = os.path.splitext(file_path)[1].lower().replace(".", "")
+        return MIME_TYPE_MAP.get(file_ext or "jpeg", "jpeg")
+
+    def _create_image_multimodal_message(
+        self,
+        question: str,
+        image_data: str,
+        mime_type: str
+    ) -> Dict[str, Any]:
+        """Create a multimodal message with image content.
+
+        Args:
+            question: User question about the image
+            image_data: Base64-encoded image data or URL
+            mime_type: MIME type (e.g., 'jpeg', 'png')
+
+        Returns:
+            Message dictionary with multimodal content
+        """
+        # Check if it's a URL or base64 data
+        if image_data.startswith(('http://', 'https://')):
+            image_url = image_data
+        else:
+            image_url = f"data:image/{mime_type};base64,{image_data}"
+
+        return {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": question},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image_url}
+                }
+            ]
+        }
+
+    def _create_pdf_multimodal_message(
+        self,
+        question: str,
+        pdf_data: str,
+        filename: str
+    ) -> Dict[str, Any]:
+        """Create a multimodal message with PDF content.
+
+        Args:
+            question: User question about the PDF
+            pdf_data: Base64-encoded PDF data or URL
+            filename: PDF filename
+
+        Returns:
+            Message dictionary with multimodal content
+        """
+        # Check if it's a URL or base64 data
+        if pdf_data.startswith(('http://', 'https://')):
+            file_data = pdf_data
+        else:
+            file_data = f"data:application/pdf;base64,{pdf_data}"
+
+        return {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": question},
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": filename,
+                        "file_data": file_data
+                    }
+                }
+            ]
+        }
+
+    def _encode_image_file(
+        self,
+        image_path: str,
+        question: Optional[str],
+        messages: List[Dict[str, Any]]
+    ) -> Optional[str]:
+        """Encode image file and add to messages.
+
+        Args:
+            image_path: Path to the image file
+            question: Optional user question (will be consumed if provided)
+            messages: Message list to append to
+
+        Returns:
+            None if question was consumed, original question otherwise
+        """
+        self.logger.info(json.dumps({
+            "log_message": "Processing image file",
+            "image_path": image_path
+        }))
+
+        mime_type = self._get_mime_type(image_path)
+        image_base64 = encode_file_to_base64(image_path)
+
+        if image_base64:
+            user_question = question or "Please analyze and describe this image in detail."
+            message = self._create_image_multimodal_message(user_question, image_base64, mime_type)
+            messages.append(message)
+
+            self.logger.debug(json.dumps({
+                "log_message": "Created multimodal message for image",
+                "mime_type": mime_type
+            }))
+            return None  # Question consumed
+
+        return question
+
+    def _encode_pdf_file(
+        self,
+        pdf_path: str,
+        question: Optional[str],
+        messages: List[Dict[str, Any]]
+    ) -> Optional[str]:
+        """Encode PDF file and add to messages.
+
+        Args:
+            pdf_path: Path to the PDF file
+            question: Optional user question (will be consumed if provided)
+            messages: Message list to append to
+
+        Returns:
+            None if question was consumed, original question otherwise
+        """
+        pdf_filename = os.path.basename(pdf_path)
+        file_ext = os.path.splitext(pdf_filename)[1].lower()
+
+        self.logger.debug(json.dumps({
+            "log_message": "Processing PDF file",
+            "pdf_path": pdf_path,
+            "extension": file_ext
+        }))
+
+        # Handle non-PDF files as text
+        if file_ext != '.pdf':
+            self.logger.warning(json.dumps({
+                "log_message": "File does not have .pdf extension, treating as text file",
+                "file_path": pdf_path
+            }))
+
+            file_content = get_file_input(pdf_path)
+            if file_content:
+                messages.append({
+                    "role": "system",
+                    "content": f"The file content of {pdf_filename} to work with:\n{file_content}"
+                })
+                return question or "Please analyze and summarize the content of this file."
+            return question
+
+        # Encode actual PDF file
+        pdf_base64 = encode_file_to_base64(pdf_path)
+        if not pdf_base64:
+            self.logger.warning("Failed to encode PDF file")
+            return question
+
+        user_question = question or "Please analyze and summarize the content of this PDF."
+
+        try:
+            message = self._create_pdf_multimodal_message(user_question, pdf_base64, pdf_filename)
+            messages.append(message)
+
+            # Add fallback note
+            messages.append({
+                "role": "system",
+                "content": ("Note: If you're unable to access the PDF content directly, "
+                          "please inform the user that the PDF could not be processed, "
+                          "and ask them to try extracting the text manually.")
+            })
+
+            self.logger.debug(json.dumps({
+                "log_message": "Created multimodal message for PDF",
+                "filename": pdf_filename
+            }))
+            return None  # Question consumed
+
+        except Exception as e:
+            self.logger.error(json.dumps({
+                "log_message": "Error creating PDF message format",
+                "error": str(e)
+            }))
+
+            messages.append({
+                "role": "user",
+                "content": user_question
+            })
+            messages.append({
+                "role": "system",
+                "content": (f"The user attempted to upload a PDF file named '{pdf_filename}', "
+                          f"but it couldn't be processed. Please inform them that PDF processing "
+                          f"may require PyPDF2 to be installed or the PDF may not be compatible.")
+            })
+            return None  # Question consumed
+
+    # ========================================================================
+    # PUBLIC METHODS
+    # ========================================================================
+
+    def build_messages(
+        self,
+        *,
+        question: Optional[str] = None,
+        file_input: Optional[str] = None,
+        pattern_id: Optional[str] = None,
+        pattern_input: Optional[Dict[str, Any]] = None,
+        response_format: str = "rawtext",
+        url: Optional[str] = None,
+        image: Optional[str] = None,
+        pdf: Optional[str] = None,
+        image_url: Optional[str] = None,
+        pdf_url: Optional[str] = None,
+        model_name: Optional[str] = None
+    ) -> Tuple[Optional[List[Dict[str, Any]]], Optional[str]]:
         # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-        """Builds the message list for OpenRouter.
+        """Build the message list for OpenRouter.
 
         Args:
             question: Optional user question
@@ -37,7 +282,7 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
             model_name: Optional model name for model-specific instructions
 
         Returns:
-            tuple: (messages, resolved_pattern_id)
+            Tuple of (messages list, resolved_pattern_id) or (None, None) on error
         """
         messages = []
         resolved_pattern_id = pattern_id
@@ -99,60 +344,7 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
 
         # Handle image input - convert to base64 for multimodal message
         if image:
-            self.logger.info(json.dumps({
-                "log_message": "Image file provided for analysis",
-                "image_path": image
-            }))
-
-            # Encode the image to base64
-            image_filename = os.path.basename(image)
-            image_ext = os.path.splitext(image_filename)[1].lower().replace(".", "")
-            if not image_ext:
-                image_ext = "jpeg"  # Default extension if none detected
-
-            # Map file extensions to proper MIME types
-            mime_type_map = {
-                "jpg": "jpeg",
-                "jpeg": "jpeg",
-                "png": "png",
-                "gif": "gif",
-                "webp": "webp",
-                "bmp": "bmp"
-            }
-
-            # Get the proper MIME type
-            mime_type = mime_type_map.get(image_ext, "jpeg")
-
-            image_base64 = encode_file_to_base64(image)
-            if image_base64:
-                # For image inputs, we need to use the content list format for multimodal
-                # Create a default question if none provided
-                if not question:
-                    user_question = "Please analyze and describe this image in detail."
-                else:
-                    user_question = question
-
-                # Create multimodal message with image content
-                messages.append({
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": user_question},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/{mime_type};base64,{image_base64}"
-                            }
-                        }
-                    ]
-                })
-                # Mark question as handled so we don't add it again at the end
-                question = None
-
-                # Log the message structure for debugging
-                self.logger.debug(json.dumps({
-                    "log_message": "Created multimodal message for image",
-                    "message_structure": messages[-1]
-                }))
+            question = self._encode_image_file(image, question, messages)
 
         # Handle image URL input
         if image_url:
@@ -161,166 +353,18 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                 "image_url": image_url
             }))
 
-            # Create a default question if none provided
-            if not question:
-                user_question = "Please analyze and describe this image in detail."
-            else:
-                user_question = question
+            user_question = question or "Please analyze and describe this image in detail."
+            message = self._create_image_multimodal_message(user_question, image_url, "jpeg")
+            messages.append(message)
+            question = None  # Mark question as consumed
 
-            # Create multimodal message with image URL
-            messages.append({
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": user_question},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": image_url
-                        }
-                    }
-                ]
-            })
-            # Mark question as handled so we don't add it again at the end
-            question = None
-
-            # Log the message structure for debugging
             self.logger.debug(json.dumps({
-                "log_message": "Created multimodal message for image URL",
-                "message_structure": messages[-1]
+                "log_message": "Created multimodal message for image URL"
             }))
 
         # Handle PDF input - encode as base64
         if pdf:
-            self.logger.info(json.dumps({
-                "log_message": "PDF file provided for analysis",
-                "pdf_path": pdf
-            }))
-
-                            # Check if the file is actually a PDF
-            pdf_filename = os.path.basename(pdf)
-            file_ext = os.path.splitext(pdf_filename)[1].lower()
-
-            self.logger.debug(json.dumps({
-                "log_message": "Processing PDF file",
-                "pdf_path": pdf,
-                "filename": pdf_filename,
-                "extension": file_ext
-            }))
-
-            if file_ext != '.pdf':
-                self.logger.warning(json.dumps({
-                    "log_message": "File does not have .pdf extension, treating as text file",
-                    "file_path": pdf,
-                    "file_ext": file_ext
-                }))
-                # If not a PDF, treat as a text file
-                file_content = get_file_input(pdf)
-                if file_content:
-                    messages.append({
-                        "role": "system",
-                        "content": f"The file content of {pdf_filename} to work with:\n{file_content}"
-                    })
-                    # If no question provided, default to summarization
-                    if not question:
-                        question = "Please analyze and summarize the content of this file."
-                self.logger.debug(json.dumps({"log_message": "Treating file as text, not PDF"}))
-            else:
-                # This is an actual PDF file, encode it to base64
-                # Encode the PDF to base64
-                self.logger.debug(json.dumps({
-                    "log_message": "Attempting to encode PDF file",
-                    "pdf_path": pdf
-                }))
-
-                pdf_base64 = encode_file_to_base64(pdf)
-
-                if pdf_base64:
-                    self.logger.debug(json.dumps({
-                        "log_message": "PDF encoding successful",
-                        "base64_length": len(pdf_base64)
-                    }))
-
-                    # Create default question if none provided
-                    if not question:
-                        user_question = "Please analyze and summarize the content of this PDF."
-                    else:
-                        user_question = question
-
-                    # Create multimodal message with PDF content
-                    # PDFs should be sent as 'file' type according to OpenRouter docs for Google models
-                    # Format for Google Gemma models which have better PDF support
-                    pdf_data_url = f"data:application/pdf;base64,{pdf_base64}"
-
-                    # Print the first few characters of base64 data to verify format
-                    self.logger.debug(json.dumps({
-                        "log_message": "PDF base64 data sample",
-                        "prefix": pdf_base64[:50]
-                    }))
-
-                    # Create a message structure that works with most OpenRouter models
-                    try:
-                        # Standard message format for PDF handling
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": user_question},
-                                {
-                                    "type": "file",
-                                    "file": {
-                                        "filename": pdf_filename,
-                                        "file_data": pdf_data_url
-                                    }
-                                }
-                            ]
-                        })
-
-                        # Add a note for the AI about PDF handling
-                        messages.append({
-                            "role": "system",
-                            "content": ("Note: If you're unable to access the PDF content directly, "
-                                      "please inform the user that the PDF could not be processed, "
-                                      "and ask them to try extracting the text manually.")
-                        })
-
-                    except Exception as e:
-                        # If there's an error with the PDF formatting, fall back to text-only
-                        self.logger.error(json.dumps({
-                            "log_message": "Error creating PDF message format",
-                            "error": str(e)
-                        }))
-
-                        # Add a simple text message instead and explain the issue
-                        messages.append({
-                            "role": "user",
-                            "content": user_question
-                        })
-                        messages.append({
-                            "role": "system",
-                            "content": (f"The user attempted to upload a PDF file named '{pdf_filename}', "
-                                      f"but it couldn't be processed. Please inform them that PDF processing "
-                                      f"may require PyPDF2 to be installed (`pip install PyPDF2`) or that "
-                                      f"the specific PDF may not be compatible with this service.")
-                        })
-                    # Mark question as handled so we don't add it again at the end
-                    question = None
-
-                    # Log details for debugging
-                    self.logger.debug(json.dumps({
-                        "log_message": "PDF message details",
-                        "base64_prefix": pdf_base64[:20] + "...",
-                        "content_type": "file",
-                        "mime_type": "application/pdf",
-                        "filename": pdf_filename,
-                        "data_url_prefix": pdf_data_url.split(",", maxsplit=1)[0]
-                    }))
-
-                    # Log the message structure for debugging
-                    self.logger.debug(json.dumps({
-                        "log_message": "Created multimodal message for PDF",
-                        "message_structure": messages[-1]
-                    }))
-                else:
-                    self.logger.warning("Failed to encode PDF file, pdf_base64 is None")
+            question = self._encode_pdf_file(pdf, question, messages)
 
         # Handle PDF URL input
         if pdf_url:
@@ -329,38 +373,18 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                 "pdf_url": pdf_url
             }))
 
-            # Create a default question if none provided
-            if not question:
-                user_question = "Please analyze and summarize the content of this PDF."
-            else:
-                user_question = question
-
             # Extract filename from URL
             pdf_filename = pdf_url.split('/')[-1]
             if not pdf_filename or not pdf_filename.lower().endswith('.pdf'):
                 pdf_filename = "document.pdf"
 
+            user_question = question or "Please analyze and summarize the content of this PDF."
+
             try:
-                # Create multimodal message with PDF URL - using proper structure as per documentation
-                # The URL should be directly in the file_data field
-                user_message = {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": user_question},
-                        {
-                            "type": "file",
-                            "file": {
-                                "filename": pdf_filename,
-                                "file_data": pdf_url
-                            }
-                        }
-                    ]
-                }
+                message = self._create_pdf_multimodal_message(user_question, pdf_url, pdf_filename)
+                messages.append(message)
 
-                # Add the message to the list
-                messages.append(user_message)
-
-                # Add a note for the AI about PDF handling
+                # Add fallback note
                 messages.append({
                     "role": "system",
                     "content": ("Note: If you're unable to access the PDF content directly, please inform the user "
@@ -368,22 +392,17 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                               "or downloading the PDF first.")
                 })
 
-                # Mark question as handled so we don't add it again at the end
-                question = None
+                question = None  # Mark question as consumed
 
-                # Log the message structure for debugging
                 self.logger.debug(json.dumps({
-                    "log_message": "Created multimodal message for PDF URL",
-                    "message_structure": messages[-1]
+                    "log_message": "Created multimodal message for PDF URL"
                 }))
             except Exception as e:
-                # If there's an error with the PDF URL formatting, fall back to text-only
                 self.logger.error(json.dumps({
                     "log_message": "Error creating PDF URL message format",
                     "error": str(e)
                 }))
 
-                # Add a simple text message instead and explain the issue
                 messages.append({
                     "role": "user",
                     "content": user_question
@@ -393,8 +412,7 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                     "content": (f"The user attempted to provide a PDF URL '{pdf_url}', but it couldn't be processed. "
                               f"Please inform them that the PDF URL may not be valid or directly accessible.")
                 })
-                # Mark question as handled so we don't add it again at the end
-                question = None
+                question = None  # Mark question as consumed
 
         # Add pattern-specific context if specified
         if pattern_id is not None:
@@ -418,12 +436,14 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                 "content": question
             })
 
-        #DEBUG
-
-
         return messages, resolved_pattern_id
 
-    def _handle_pattern_context(self, pattern_id, pattern_input, messages):
+    def _handle_pattern_context(
+        self,
+        pattern_id: str,
+        pattern_input: Optional[Dict[str, Any]],
+        messages: List[Dict[str, Any]]
+    ) -> Optional[str]:
         # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         """Handle pattern-specific context and add to messages."""
         # Handle pattern selection if no specific ID was provided
@@ -471,112 +491,56 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
             # Handle image files
             if input_def.input_type.value == "image_file" and input_def.name in pattern_inputs:
                 image_file_input = pattern_inputs[input_def.name]
-                # Remove from structured inputs to avoid duplication
                 structured_inputs.pop(input_def.name, None)
 
-                # Only process image file if it's not None
                 if image_file_input is not None:
-                    # Handle the image file like -img parameter
-                    image_path = image_file_input
-                    image_filename = os.path.basename(image_path)
-                    image_ext = os.path.splitext(image_filename)[1].lower().replace(".", "")
-                    if not image_ext:
-                        image_ext = "jpeg"  # Default extension if none detected
-
-                    # Map file extensions to proper MIME types
-                    mime_type_map = {
-                        "jpg": "jpeg",
-                        "jpeg": "jpeg",
-                        "png": "png",
-                        "gif": "gif",
-                        "webp": "webp",
-                        "bmp": "bmp"
-                    }
-
-                    # Get the proper MIME type
-                    mime_type = mime_type_map.get(image_ext, "jpeg")
-
                     self.logger.info(json.dumps({
                         "log_message": "Processing image_file from pattern input",
-                        "image_path": image_path
+                        "image_path": image_file_input
                     }))
 
-                    # Encode the image to base64
-                    image_base64 = encode_file_to_base64(image_path)
+                    mime_type = self._get_mime_type(image_file_input)
+                    image_base64 = encode_file_to_base64(image_file_input)
 
                     if image_base64:
-                        # Find user question in pattern inputs or use default
                         user_question = "Please analyze this image based on the provided inputs."
-
-                        # Create multimodal message with image content
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": user_question},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/{mime_type};base64,{image_base64}"
-                                    }
-                                }
-                            ]
-                        })
+                        message = self._create_image_multimodal_message(
+                            user_question, image_base64, mime_type
+                        )
+                        messages.append(message)
 
                         self.logger.debug(json.dumps({
-                            "log_message": "Created multimodal message for pattern image input",
-                            "message_structure": "multimodal with image"
+                            "log_message": "Created multimodal message for pattern image input"
                         }))
 
             # Handle PDF files
             elif input_def.input_type.value == "pdf_file" and input_def.name in pattern_inputs:
                 pdf_file_input = pattern_inputs[input_def.name]
-                # Remove from structured inputs to avoid duplication
                 structured_inputs.pop(input_def.name, None)
 
-                # Only process PDF file if it's not None
                 if pdf_file_input is not None:
-                    # Handle the PDF file like -pdf parameter
-                    pdf_path = pdf_file_input
-                    pdf_filename = os.path.basename(pdf_path)
-
                     self.logger.info(json.dumps({
                         "log_message": "Processing pdf_file from pattern input",
-                        "pdf_path": pdf_path
+                        "pdf_path": pdf_file_input
                     }))
 
-                    # Encode the PDF to base64
-                    pdf_base64 = encode_file_to_base64(pdf_path)
+                    pdf_filename = os.path.basename(pdf_file_input)
+                    pdf_base64 = encode_file_to_base64(pdf_file_input)
 
                     if pdf_base64:
-                        # Find user question in pattern inputs or use default
                         user_question = "Please analyze this PDF document based on the provided inputs."
-
-                        # Create multimodal message with PDF content
-                        pdf_data_url = f"data:application/pdf;base64,{pdf_base64}"
-
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": user_question},
-                                {
-                                    "type": "file",
-                                    "file": {
-                                        "filename": pdf_filename,
-                                        "file_data": pdf_data_url
-                                    }
-                                }
-                            ]
-                        })
+                        message = self._create_pdf_multimodal_message(
+                            user_question, pdf_base64, pdf_filename
+                        )
+                        messages.append(message)
 
                         self.logger.debug(json.dumps({
-                            "log_message": "Created multimodal message for pattern PDF input",
-                            "message_structure": "multimodal with PDF"
+                            "log_message": "Created multimodal message for pattern PDF input"
                         }))
 
             # Handle PDF URL inputs from pattern
             elif input_def.name == "pdf_url" and input_def.name in pattern_inputs:
                 pdf_url = pattern_inputs[input_def.name]
-                # Remove from structured inputs to avoid duplication
                 structured_inputs.pop(input_def.name, None)
 
                 if pdf_url is not None:
@@ -586,32 +550,16 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                     }))
 
                     try:
-                        # Create a filename from the URL
                         pdf_filename = pdf_url.split('/')[-1]
                         if not pdf_filename.lower().endswith('.pdf'):
                             pdf_filename += '.pdf'
 
-                        # Create default question if none provided
                         user_question = "Please analyze and summarize this PDF document based on the provided inputs."
-
-                        # Create multimodal message with PDF URL
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": user_question},
-                                {
-                                    "type": "file",
-                                    "file": {
-                                        "filename": pdf_filename,
-                                        "file_data": pdf_url
-                                    }
-                                }
-                            ]
-                        })
+                        message = self._create_pdf_multimodal_message(user_question, pdf_url, pdf_filename)
+                        messages.append(message)
 
                         self.logger.debug(json.dumps({
-                            "log_message": "Created multimodal message for pattern PDF URL input",
-                            "message_structure": "multimodal with PDF URL"
+                            "log_message": "Created multimodal message for pattern PDF URL input"
                         }))
 
                     except Exception as e:
@@ -623,7 +571,6 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
             # Handle image URL inputs from pattern
             elif input_def.name == "image_url" and input_def.name in pattern_inputs:
                 image_url = pattern_inputs[input_def.name]
-                # Remove from structured inputs to avoid duplication
                 structured_inputs.pop(input_def.name, None)
 
                 if image_url is not None:
@@ -633,26 +580,12 @@ class MessageBuilder:  # pylint: disable=too-few-public-methods
                     }))
 
                     try:
-                        # Create default question if none provided
                         user_question = "Please analyze and describe this image based on the provided inputs."
-
-                        # Create multimodal message with image URL
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": user_question},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": image_url
-                                    }
-                                }
-                            ]
-                        })
+                        message = self._create_image_multimodal_message(user_question, image_url, "jpeg")
+                        messages.append(message)
 
                         self.logger.debug(json.dumps({
-                            "log_message": "Created multimodal message for pattern image URL input",
-                            "message_structure": "multimodal with image URL"
+                            "log_message": "Created multimodal message for pattern image URL input"
                         }))
 
                     except Exception as e:

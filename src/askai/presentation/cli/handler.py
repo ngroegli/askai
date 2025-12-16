@@ -13,23 +13,7 @@ from askai.utils.config import (
     TEST_CHATS_DIR, TEST_CONFIG_PATH, TEST_LOGS_DIR,
     get_config_path, is_test_environment, create_test_config_from_production
 )
-
-# TUI imports only for interactive mode
-try:
-    from askai.presentation.tui import is_tui_available
-    from askai.presentation.tui.apps.tabbed_tui_app import run_tabbed_tui
-    TUI_IMPORTS_AVAILABLE = True
-except ImportError:
-    TUI_IMPORTS_AVAILABLE = False
-    def is_tui_available() -> bool:
-        """
-        Fallback function when TUI imports are not available.
-
-        Returns:
-            bool: Always False when TUI dependencies are missing
-        """
-        return False
-
+from askai.presentation.tui.apps.tabbed_tui_app import run_tabbed_tui
 
 
 class CommandHandler:
@@ -52,10 +36,6 @@ class CommandHandler:
             bool: True if interactive mode was handled
         """
         if not getattr(args, 'interactive', False):
-            return False
-
-        if not TUI_IMPORTS_AVAILABLE or not is_tui_available():
-            print("Interactive TUI mode is not available. Falling back to CLI.")
             return False
 
         try:

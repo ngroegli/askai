@@ -60,7 +60,7 @@ class PatternProcessor:
         )
 
         # Check if message building was cancelled
-        if messages is None:
+        if messages is None or resolved_pattern_id is None:
             self.logger.info(json.dumps({
                 "log_message": "Pattern input collection cancelled by user"
             }))
