@@ -39,8 +39,8 @@ sys.modules['askai.utils.config'].ensure_askai_setup = MagicMock()
 sys.modules['askai.utils.config'].create_directory_structure = MagicMock()
 
 
-class TestAIService(BaseUnitTest):
-    """Test the AI service functionality."""
+class TestAIServiceWithMessaging(BaseUnitTest):
+    """Test the AI service functionality with messaging integration."""
 
     def run(self):
         """Run all AI service tests."""
@@ -75,7 +75,7 @@ class TestAIService(BaseUnitTest):
         """Test successful AI response retrieval."""
         try:
             # Additional runtime patches for user input
-            with patch('askai.modules.patterns.pattern_outputs.PatternOutput._get_user_confirmation',
+            with patch('askai.core.patterns.outputs.PatternOutput._get_user_confirmation',
                        return_value=True), \
                  patch('builtins.input', return_value='y'):
 
@@ -90,7 +90,7 @@ class TestAIService(BaseUnitTest):
                 }
 
                 # Mock the OpenRouterClient class
-                with patch('askai.modules.ai.ai_service.OpenRouterClient') as mock_client_class:
+                with patch('askai.core.ai.service.OpenRouterClient') as mock_client_class:
                     mock_client = Mock()
                     mock_client.request_completion.return_value = mock_response
                     mock_client_class.return_value = mock_client
@@ -133,7 +133,7 @@ class TestAIService(BaseUnitTest):
         """Test AI response handling when API fails."""
         try:
             # Additional runtime patches for user input
-            with patch('askai.modules.patterns.pattern_outputs.PatternOutput._get_user_confirmation',
+            with patch('askai.core.patterns.outputs.PatternOutput._get_user_confirmation',
                        return_value=True), \
                  patch('builtins.input', return_value='y'):
 

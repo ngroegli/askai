@@ -1,0 +1,106 @@
+/* Main Application Styles */
+Screen {
+    background: #0f172a;
+}
+
+Header {
+    background: #1e293b;
+    color: #00FFFF;
+    dock: top;
+    height: 3;
+}
+
+Footer {
+    background: #1e293b;
+    color: #87CEEB;
+    dock: bottom;
+    height: 3;
+}
+
+/* Tab Content Styles */
+TabbedContent {
+    background: #0f172a;
+    margin: 1;
+}
+
+TabPane {
+    background: #0f172a;
+    padding: 1;
+}
+
+/* Additional app-specific styles */
+.question-input {
+    height: 4;
+    max-height: 4;
+}
+
+.question-form {
+    margin: 1;
+}
+
+.question-main-layout {
+    height: 100%;
+}
+
+.question-form-panel {
+    width: 1fr;
+    margin-right: 1;
+}
+
+.answer-panel {
+    width: 1fr;
+    margin-left: 1;
+}
+
+.input-row, .select-row {
+    height: auto;
+    margin: 0;
+}
+
+.input-column, .select-column {
+    margin: 0 1;
+}
+
+.pattern-browser-container,
+.chat-browser-container,
+.model-browser-container {
+    height: 100%;
+}
+
+.pattern-list-panel,
+.chat-list-panel,
+.model-list-panel {
+    width: 1fr;
+    margin-right: 1;
+}
+
+.pattern-details-panel,
+.chat-details-panel,
+.model-details-panel {
+    width: 2fr;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Pattern Details Box */
+.pattern-details-box {
+    background: #1e293b;
+    border: solid #00FFFF;
+    height: 1fr;
+    padding: 1;
+}
+
+/* Pattern List Box */
+.pattern-list-box {
+    background: #1e293b;
+    border: solid #00FFFF;
+    height: 1fr;
+}
+
+/* Remove border from ListView when inside ScrollableContainer */
+.pattern-list-box ListView {
+    border: none;
+    background: transparent;
+}

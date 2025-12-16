@@ -7,20 +7,20 @@ managing inputs and outputs, and specialized use cases through predefined templa
 from .configuration import (
     PatternConfiguration,
     PatternPurpose,
-    PatternFunctionality,
-    ModelConfiguration
+    PatternFunctionality
 )
 from .inputs import PatternInput, InputType
 from .outputs import PatternOutput
 from .manager import PatternManager
+from .processor import PatternProcessor
 
 __all__ = [
     'PatternConfiguration',
     'PatternPurpose',
     'PatternFunctionality',
-    'ModelConfiguration',
     'PatternInput',
     'InputType',
     'PatternOutput',
-    'PatternManager'
+    'PatternManager',
+    'PatternProcessor'
 ]

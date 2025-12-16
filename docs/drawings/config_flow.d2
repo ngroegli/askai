@@ -12,22 +12,22 @@ shared_config: "Shared Layer" {
   style.fill: "#F5F5F5" # Light Gray background
   style.stroke: "#757575"
 
-  dir_check: "Directory Check\n(shared/config/)" {
+  dir_check: "Directory Check\n(utils/config)" {
     shape: diamond
     style.fill: "#BDBDBD" # Light Gray (infra)
   }
 
-  create_dirs: "Create Directories\n(shared/config/)" {
+  create_dirs: "Create Directories\n(utils/config)" {
     shape: rectangle
     style.fill: "#BDBDBD" # Light Gray
   }
 
-  config_check: "Config File Check\n(shared/config/)" {
+  config_check: "Config File Check\n(utils/config)" {
     shape: diamond
     style.fill: "#BDBDBD" # Light Gray
   }
 
-  load_config: "Load Configuration\n(shared/config/loader.py)" {
+  load_config: "Load Configuration\n(utils/config.py)" {
     shape: rectangle
     style.fill: "#BDBDBD" # Light Gray
   }
@@ -38,7 +38,7 @@ presentation_layer: "Presentation Layer" {
   shape: rectangle
   style.fill: "#F3E5F5" # Light Purple background
 
-  setup_wizard: "Setup Wizard\n(shared/config/ + cli/)" {
+  setup_wizard: "Setup Wizard\n(utils/config + cli/)" {
     shape: rectangle
     style.fill: "#CE93D8" # Light Purple (CLI/user interaction)
   }
@@ -49,7 +49,7 @@ app_core: "Application Core" {
   shape: rectangle
   style.fill: "#E3F2FD" # Light Blue background
 
-  init_components: "Initialize Components\n(askai.py)" {
+  init_components: "Initialize Components\n(main.py)" {
     shape: rectangle
     style.fill: "#90CAF9" # Light Blue (core app)
   }

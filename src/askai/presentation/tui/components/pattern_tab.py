@@ -3,19 +3,12 @@ Pattern Browser Tab Component.
 Handles pattern browsing, selection, and execution.
 """
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
+from textual.widgets import Static, Button, ListView, ListItem, Label, TextArea, Input
+from textual.containers import Vertical, Horizontal, VerticalScroll
+from textual.message import Message
+
 from .base_tab import BaseTabComponent
-
-# pylint: disable=import-error
-from .styles import (
-    Static, Button, ListView, ListItem, Label, TextArea, Input,
-    Vertical, Horizontal, VerticalScroll, Message
-)
-
-if TYPE_CHECKING:
-    from textual.widgets import Static, Button, ListView, ListItem, Label, TextArea, Input
-    from textual.containers import Vertical, Horizontal, VerticalScroll
-    from textual.message import Message
 
 
 class PatternTab(BaseTabComponent):

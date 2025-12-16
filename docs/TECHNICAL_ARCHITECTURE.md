@@ -15,24 +15,30 @@
 ### Project Root Structure
 ```
 askai-cli/
-├── python/                     # Main application code (Layered Architecture)
+├── src/askai/                 # Main application code (Layered Architecture)
 │   ├── __init__.py
-│   ├── askai.py               # Application entry point
-│   ├── shared/                # Common utilities and infrastructure
-│   │   ├── config/            # Configuration management
-│   │   ├── logging/           # Logging infrastructure
-│   │   └── utils/             # Shared utilities
-│   ├── modules/               # Core business logic
+│   ├── __main__.py            # Module entry point
+│   ├── main.py                # Application entry point
+│   ├── _version.py            # Version management
+│   ├── utils/                 # Common utilities and infrastructure
+│   │   ├── config.py          # Configuration management
+│   │   ├── logging.py         # Logging infrastructure
+│   │   └── helpers.py         # Shared utilities
+│   ├── core/                  # Core business logic
 │   │   ├── ai/                # AI service integration
 │   │   ├── chat/              # Chat session management
 │   │   ├── messaging/         # Message construction
 │   │   ├── patterns/          # Pattern management
-│   │   └── questions/         # Question processing logic (NEW)
+│   │   └── questions/         # Question processing logic
 │   ├── presentation/          # User interface layer
 │   │   ├── cli/               # Command-line interface
-│   │   └── api/               # REST API interface
-│   └── infrastructure/        # External output processing
-│       └── output/            # Output coordination and handling
+│   │   ├── api/               # REST API interface
+│   │   └── tui/               # Terminal UI interface
+│   └── output/                # Output processing
+│       ├── coordinator.py     # Output coordination
+│       ├── formatters/        # Display formatting
+│       ├── processors/        # Content processing
+│       └── writers/           # File writing
 ├── patterns/                   # Built-in pattern definitions
 ├── config/                     # Configuration templates
 ├── tests/                      # Test suite
@@ -44,10 +50,10 @@ askai-cli/
 
 ### Package Responsibilities
 
-**python/shared/**: Common infrastructure, configuration management, logging, and utilities
-**python/modules/**: Core business logic organized by functional domain
-**python/presentation/**: User interface components including CLI handling and REST API
-**python/infrastructure/**: External output processing and coordination
+**src/askai/utils/**: Common infrastructure, configuration management, logging, and utilities
+**src/askai/core/**: Core business logic organized by functional domain
+**src/askai/presentation/**: User interface components including CLI handling, REST API, and TUI
+**src/askai/output/**: Output processing and coordination
 **patterns/**: Pattern template definitions in Markdown format
 **config/**: Configuration templates and examples
 **tests/**: Comprehensive test suite with integration tests
@@ -55,9 +61,9 @@ askai-cli/
 
 ## Module Structure
 
-### Core Application (`python/`)
+### Core Application (`src/askai/`)
 
-#### Entry Point Module (`askai.py`)
+#### Entry Point Module (`main.py`)
 ```python
 # Primary Functions:
 - main() -> None                    # Application entry point
@@ -71,9 +77,9 @@ askai-cli/
 - Error handling and cleanup
 ```
 
-#### Shared Infrastructure (`shared/`)
+#### Utilities Infrastructure (`utils/`)
 
-##### Configuration Module (`shared/config/loader.py`)
+##### Configuration Module (`utils/config.py`)
 ```python
 # Primary Functions:
 - load_config() -> Dict[str, Any]
@@ -89,10 +95,10 @@ askai-cli/
 - LOGS_DIR: ~/.askai/logs
 
 # Exported Constants:
-- All configuration constants available via shared.config
+- All configuration constants available via utils.config
 ```
 
-##### Logging Module (`shared/logging/setup.py`)
+##### Logging Module (`utils/logging.py`)
 ```python
 # Primary Functions:
 - setup_logger(config: Dict, debug: bool) -> logging.Logger
@@ -104,7 +110,7 @@ askai-cli/
 - JSON-structured logging
 ```
 
-##### Utilities Module (`shared/utils/helpers.py`)
+##### Utilities Module (`utils/helpers.py`)
 ```python
 # Key Functions:
 - get_piped_input() -> Optional[str]
@@ -121,11 +127,11 @@ askai-cli/
 - File validation
 ```
 
-### Core Modules Package (`modules/`)
+### Core Business Logic Package (`core/`)
 
-#### AI Service Package (`modules/ai/`)
+#### AI Service Package (`core/ai/`)
 
-##### AI Service (`ai_service.py`)
+##### AI Service (`service.py`)
 ```python
 class AIService:
     def __init__(self, logger: logging.Logger)
@@ -154,7 +160,7 @@ class AIService:
 - Integrate web search capabilities
 ```
 
-##### OpenRouter Client (`openrouter_client.py`)
+##### OpenRouter Client (`openrouter.py`)
 ```python
 class OpenRouterClient:
     def __init__(self, config: Dict, logger: logging.Logger)
@@ -179,7 +185,7 @@ class OpenRouterClient:
 - Credit balance tracking
 ```
 
-#### Question Processing Package (`modules/questions/`) - NEW
+#### Question Processing Package (`core/questions/`)
 ```python
 class QuestionProcessor:
     def __init__(self, ai_service: AIService, message_builder: MessageBuilder, logger: logging.Logger)
@@ -198,7 +204,7 @@ class QuestionProcessor:
 - Support various input formats for questions (text, images, PDFs, URLs)
 ```
 
-#### Message Building Package (`modules/messaging/`)
+#### Message Building Package (`core/messaging/`)
 ```python
 class MessageBuilder:
     def __init__(self, pattern_manager: PatternManager, logger: logging.Logger)
@@ -228,7 +234,7 @@ class MessageBuilder:
 
 #### CLI Package (`presentation/cli/`)
 
-##### CLI Parser (`cli_parser.py`)
+##### CLI Parser (`parser.py`)
 ```python
 class CLIParser:
     def __init__(self)
@@ -243,7 +249,7 @@ class CLIParser:
 - OpenRouter commands (API management)
 ```
 
-##### Command Handler (`command_handler.py`)
+##### Command Handler (`handler.py`)
 ```python
 class CommandHandler:
     def __init__(self, pattern_manager: PatternManager, chat_manager: ChatManager, logger: logging.Logger)
@@ -260,7 +266,7 @@ class CommandHandler:
 - Configuration (setup, validate)
 ```
 
-##### Banner Argument Parser (`banner_argument_parser.py`)
+##### Banner Argument Parser (`banner.py`)
 ```python
 class BannerArgumentParser(argparse.ArgumentParser):
     # Enhanced argument parser with branded help display
@@ -359,9 +365,9 @@ question_response = {
 - **Swagger UI**: Interactive API documentation at `/docs/` endpoint
 - **Docker Ready**: Production deployment with Gunicorn and nginx support
 
-### Pattern Management Package (`python/patterns/`)
+### Pattern Management Package (`core/patterns/`)
 
-#### Pattern Manager (`pattern_manager.py`)
+#### Pattern Manager (`manager.py`)
 ```python
 class PatternManager:
     def __init__(self, base_path: str, config: Optional[Dict])
@@ -384,7 +390,7 @@ class PatternManager:
 - YAML frontmatter parsing
 ```
 
-#### Pattern Input (`pattern_inputs.py`)
+#### Pattern Input (`inputs.py`)
 ```python
 class PatternInput:
     def __init__(self, name: str, description: str, input_type: InputType, **kwargs)
@@ -406,7 +412,7 @@ class InputType(Enum):
     EMAIL = "email"
 ```
 
-#### Pattern Output (`pattern_outputs.py`)
+#### Pattern Output (`outputs.py`)
 ```python
 class PatternOutput:
     def __init__(self, name: str, description: str, output_type: OutputType, **kwargs)
@@ -432,7 +438,7 @@ class OutputType(Enum):
     COMMAND = "command"
 ```
 
-#### Pattern Configuration (`pattern_configuration.py`)
+#### Pattern Configuration (`configuration.py`)
 ```python
 class PatternConfiguration:
     def __init__(self, model: ModelConfiguration, **kwargs)
@@ -458,9 +464,9 @@ class PatternPurpose(Enum):
     EXTRACTION = "extraction"
 ```
 
-### Output Package (`python/output/`)
+### Output Package (`output/`)
 
-#### Output Coordinator (`output_coordinator.py`)
+#### Output Coordinator (`coordinator.py`)
 ```python
 class OutputCoordinator:
     def __init__(self, output_dir: Optional[str])
@@ -527,9 +533,8 @@ class DirectoryManager:
     def get_output_directory() -> Optional[str]
     def validate_path_security(path: str) -> bool
 ```
-```
 
-#### Display Formatters (`display_formatters/`)
+#### Display Formatters (`formatters/`)
 ```python
 class TerminalFormatter(BaseDisplayFormatter):
     def format(content: str, content_type: str, **kwargs) -> str
@@ -541,7 +546,7 @@ class MarkdownFormatter(BaseDisplayFormatter):
     def _format_as_code_block(code: str, language_tag: str) -> str
 ```
 
-#### File Writers (`file_writers/`)
+#### File Writers (`writers/`)
 Implements Chain of Responsibility pattern for specialized file writing:
 
 ```python
@@ -572,24 +577,9 @@ class FileWriterChain:
 - Extension-based routing
 ```
 
-#### Formatters (`output/formatters/`)
-```python
-# Console Formatter
-class ConsoleFormatter:
-    def format(self, content: str, **kwargs) -> str
+### Chat Management Package (`core/chat/`)
 
-# JSON Formatter
-class JSONFormatter:
-    def format(self, content: Union[str, Dict], **kwargs) -> str
-
-# Markdown Formatter
-class MarkdownFormatter:
-    def format(self, content: str, **kwargs) -> str
-```
-
-### Chat Management Package (`python/chat/`)
-
-#### Chat Manager (`chat_manager.py`)
+#### Chat Manager (`manager.py`)
 ```python
 class ChatManager:
     def __init__(self, config: Dict, logger: logging.Logger)
@@ -644,22 +634,24 @@ Enum
 
 ### Component Composition
 ```
-Application (askai.py)
-├── shared/
-│   ├── config/loader.py (Configuration)
-│   ├── logging/setup.py (Logging)
-│   └── utils/helpers.py (Utilities)
+Application (main.py)
+├── utils/
+│   ├── config.py (Configuration)
+│   ├── logging.py (Logging)
+│   └── helpers.py (Utilities)
 ├── presentation/
 │   ├── cli/
 │   │   ├── CLIParser
 │   │   ├── CommandHandler
 │   │   └── BannerArgumentParser
-│   └── api/
-│       ├── Flask Application
-│       ├── QuestionsResource
-│       ├── PatternsResource
-│       └── HealthResource
-├── modules/
+│   ├── api/
+│   │   ├── Flask Application
+│   │   ├── QuestionsResource
+│   │   ├── PatternsResource
+│   │   └── HealthResource
+│   └── tui/
+│       └── Terminal UI Components
+├── core/
 │   ├── ai/
 │   │   ├── AIService
 │   │   └── OpenRouterClient
@@ -669,24 +661,24 @@ Application (askai.py)
 │   │   ├── PatternOutput
 │   │   └── PatternConfiguration
 │   ├── questions/
-│   │   ├── QuestionProcessor (NEW)
+│   │   ├── QuestionProcessor
 │   │   └── models
 │   ├── chat/
 │   │   └── ChatManager
 │   └── messaging/
 │       └── MessageBuilder
-└── infrastructure/output/
+└── output/
     ├── OutputCoordinator
     ├── processors/
     │   ├── ContentExtractor
     │   ├── PatternProcessor
     │   ├── ResponseNormalizer
     │   └── DirectoryManager
-    ├── display_formatters/
+    ├── formatters/
     │   ├── TerminalFormatter
     │   ├── MarkdownFormatter
     │   └── BaseDisplayFormatter
-    └── file_writers/
+    └── writers/
         ├── FileWriterChain
         ├── HTMLWriter
         ├── CSSWriter

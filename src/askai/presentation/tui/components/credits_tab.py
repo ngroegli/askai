@@ -4,15 +4,12 @@ Displays OpenRouter credit balance and usage information.
 """
 
 from datetime import datetime
+from textual.widgets import Static, Button, ProgressBar
+from textual.containers import Vertical, Horizontal, VerticalScroll
 
 from askai.core.ai import OpenRouterClient
 
 from .base_tab import BaseTabComponent
-# pylint: disable=import-error
-from .styles import (
-    Static, Button, ProgressBar, Vertical, Horizontal,
-    VerticalScroll
-)
 
 
 class CreditsTab(BaseTabComponent):

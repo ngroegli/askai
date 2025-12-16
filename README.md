@@ -140,7 +140,7 @@ sudo ln -s /full/path/to/askai/askai.py /usr/local/bin/askai
 
 ---
 
-## ⚡ Usage Examples
+## Usage Examples
 
 ### General Question
 
@@ -237,10 +237,10 @@ Branch structure:
 
 The project follows a modern layered architecture with clear separation of concerns:
 
-- **`shared/`**: Common utilities, configuration, and logging infrastructure
-- **`modules/`**: Core business logic (AI services, patterns, chat, questions, messaging)
-- **`presentation/`**: User interface layer (CLI components)
-- **`infrastructure/`**: External output processing and coordination
+- **`src/askai/core/`**: Core business logic (AI services, patterns, questions, chat, messaging)
+- **`src/askai/presentation/`**: User interface layer (CLI, API, TUI components)
+- **`src/askai/output/`**: Output processing (formatters, writers, processors)
+- **`src/askai/utils/`**: Common utilities (configuration, logging, helpers)
 
 This structure promotes maintainability, testability, and clear separation of responsibilities. For detailed architecture information, see [SOFTWARE_ARCHITECTURE.md](./docs/SOFTWARE_ARCHITECTURE.md).
 

@@ -1,27 +1,27 @@
-# AskAI CLI - Component Dependencies and Relationships (Layered Architecture with API)
+# AskAI CLI - Component Dependencies and Relationships
 title: "Component Dependencies & Relationships"
 
-# Note: Enhanced layered architecture with CLI and API presentation layers
-# Shared layer provides common services to all other layers
-# Modules layer contains core business logic organized by domain
-# Presentation layer handles both CLI and HTTP API interfaces
-# Infrastructure layer manages external output processing
+# Note: Layered architecture with clear separation of concerns
+# Utils layer provides common services to all other layers
+# Core layer contains business logic organized by domain
+# Presentation layer handles CLI, API, and TUI interfaces
+# Output layer manages response processing and file operations
 
 # Main Application
-main: "askai.py" {
-  style.fill: "#90CAF9" # Light Blue (core app)
+main: "main.py" {
+  style.fill: "#90CAF9" # Light Blue
   style.stroke: "#1976D2"
 }
 
-# Shared Layer (Common Infrastructure)
-shared_layer: "Shared Layer" {
+# Utils Layer (Common Infrastructure)
+utils_layer: "Utils Layer" {
   shape: rectangle
   style.fill: "#F5F5F5" # Light Gray background
   style.stroke: "#757575"
 
-  config_loader: "config/loader.py" { style.fill: "#BDBDBD" }
-  logging_setup: "logging/setup.py" { style.fill: "#BDBDBD" }
-  utils_helpers: "utils/helpers.py" { style.fill: "#BDBDBD" }
+  config: "config.py" { style.fill: "#BDBDBD" }
+  logging: "logging.py" { style.fill: "#BDBDBD" }
+  helpers: "helpers.py" { style.fill: "#BDBDBD" }
 }
 
 # Presentation Layer
@@ -31,98 +31,101 @@ presentation_layer: "Presentation Layer" {
   style.stroke: "#9C27B0"
 
   # CLI Components
-  cli_parser: "cli/cli_parser.py" { style.fill: "#CE93D8" }
-  command_handler: "cli/command_handler.py" { style.fill: "#CE93D8" }
-  banner_parser: "cli/banner_argument_parser.py" { style.fill: "#CE93D8" }
+  cli_parser: "cli/parser.py" { style.fill: "#CE93D8" }
+  command_handler: "cli/handler.py" { style.fill: "#CE93D8" }
+  banner_parser: "cli/banner.py" { style.fill: "#CE93D8" }
 
   # API Components
   flask_app: "api/app.py" { style.fill: "#BA68C8" }
   questions_routes: "api/routes/questions.py" { style.fill: "#BA68C8" }
   patterns_routes: "api/routes/patterns.py" { style.fill: "#BA68C8" }
   health_routes: "api/routes/health.py" { style.fill: "#BA68C8" }
-  api_schemas: "api/schemas/" { style.fill: "#BA68C8" }
+  api_schemas: "api/schemas.py" { style.fill: "#BA68C8" }
+
+  # TUI Components
+  tui_components: "tui/" { style.fill: "#AB47BC" }
 }
 
-# Modules Layer (Core Business Logic)
-modules_layer: "Modules Layer" {
+# Core Layer (Business Logic)
+core_layer: "Core Layer" {
   shape: rectangle
   style.fill: "#E8F5E9" # Light Green background
   style.stroke: "#4CAF50"
 
   # AI Module
-  ai_service: "ai/ai_service.py" { style.fill: "#A5D6A7" }
-  openrouter_client: "ai/openrouter_client.py" { style.fill: "#A5D6A7" }
+  ai_service: "ai/service.py" { style.fill: "#A5D6A7" }
+  openrouter_client: "ai/openrouter.py" { style.fill: "#A5D6A7" }
 
   # Patterns Module
-  pattern_manager: "patterns/pattern_manager.py" { style.fill: "#A5D6A7" }
-  pattern_input: "patterns/pattern_inputs.py" { style.fill: "#A5D6A7" }
-  pattern_output: "patterns/pattern_outputs.py" { style.fill: "#A5D6A7" }
-  pattern_config: "patterns/pattern_configuration.py" { style.fill: "#A5D6A7" }
+  pattern_manager: "patterns/manager.py" { style.fill: "#A5D6A7" }
+  pattern_input: "patterns/inputs.py" { style.fill: "#A5D6A7" }
+  pattern_output: "patterns/outputs.py" { style.fill: "#A5D6A7" }
+  pattern_config: "patterns/configuration.py" { style.fill: "#A5D6A7" }
 
-  # Questions Module (NEW)
+  # Questions Module
   question_processor: "questions/processor.py" { style.fill: "#81C784" }
   question_models: "questions/models.py" { style.fill: "#81C784" }
 
   # Chat Module
-  chat_manager: "chat/chat_manager.py" { style.fill: "#A5D6A7" }
+  chat_manager: "chat/manager.py" { style.fill: "#A5D6A7" }
 
   # Messaging Module
   message_builder: "messaging/builder.py" { style.fill: "#A5D6A7" }
 }
 
-# Infrastructure Layer
-infrastructure_layer: "Infrastructure Layer" {
+# Output Layer
+output_layer: "Output Layer" {
   shape: rectangle
   style.fill: "#FFF9C4" # Light Yellow background
   style.stroke: "#FF9800"
 
-  output_coordinator: "output/output_coordinator.py" { style.fill: "#FFF176" }
-  content_extractor: "output/processors/content_extractor.py" { style.fill: "#FFF176" }
-  response_normalizer: "output/processors/response_normalizer.py" { style.fill: "#FFF176" }
-  pattern_processor: "output/processors/pattern_processor.py" { style.fill: "#FFF176" }
-  directory_manager: "output/processors/directory_manager.py" { style.fill: "#FFF176" }
-  terminal_formatter: "output/display_formatters/terminal_formatter.py" { style.fill: "#FFF176" }
-  file_writer_chain: "output/file_writers/file_writer_chain.py" { style.fill: "#FFF176" }
+  output_coordinator: "coordinator.py" { style.fill: "#FFF176" }
+  content_extractor: "processors/content.py" { style.fill: "#FFF176" }
+  response_normalizer: "processors/normalizer.py" { style.fill: "#FFF176" }
+  pattern_processor: "processors/pattern.py" { style.fill: "#FFF176" }
+  directory_manager: "processors/directory.py" { style.fill: "#FFF176" }
+  terminal_formatter: "formatters/terminal.py" { style.fill: "#FFF176" }
+  file_writer_chain: "writers/chain.py" { style.fill: "#FFF176" }
 }
 
 # Main Dependencies (Cross-Layer)
-main -> shared_layer: "Uses shared services"
+main -> utils_layer: "Uses common services"
 main -> presentation_layer: "UI interaction"
-main -> modules_layer: "Business logic"
+main -> core_layer: "Business logic"
 
 # Presentation Layer Dependencies
-presentation_layer -> modules_layer: "Service calls"
-presentation_layer -> shared_layer: "Common services"
+presentation_layer -> core_layer: "Service calls"
+presentation_layer -> utils_layer: "Common services"
 
-# Modules Layer Dependencies
-modules_layer -> infrastructure_layer: "Output processing"
-modules_layer -> shared_layer: "Common services"
+# Core Layer Dependencies
+core_layer -> output_layer: "Output processing"
+core_layer -> utils_layer: "Common services"
 
-# Infrastructure Layer Dependencies
-infrastructure_layer -> shared_layer: "Common services"
+# Output Layer Dependencies
+output_layer -> utils_layer: "Common services"
 
 # Specific Component Dependencies
 main -> presentation_layer.cli_parser: "CLI argument parsing"
-main -> modules_layer.question_processor: "Question handling"
+main -> core_layer.question_processor: "Question handling"
 presentation_layer.cli_parser -> presentation_layer.command_handler: "Command routing"
-presentation_layer.command_handler -> modules_layer.pattern_manager: "Pattern operations"
-presentation_layer.command_handler -> modules_layer.chat_manager: "Chat operations"
+presentation_layer.command_handler -> core_layer.pattern_manager: "Pattern operations"
+presentation_layer.command_handler -> core_layer.chat_manager: "Chat operations"
 
 # API Component Dependencies
 presentation_layer.flask_app -> presentation_layer.questions_routes: "Route registration"
 presentation_layer.flask_app -> presentation_layer.patterns_routes: "Route registration"
 presentation_layer.flask_app -> presentation_layer.health_routes: "Route registration"
-presentation_layer.questions_routes -> modules_layer.question_processor: "Shared question logic"
-presentation_layer.patterns_routes -> modules_layer.pattern_manager: "Shared pattern logic"
-presentation_layer.questions_routes -> modules_layer.ai_service: "AI interactions"
+presentation_layer.questions_routes -> core_layer.question_processor: "Shared question logic"
+presentation_layer.patterns_routes -> core_layer.pattern_manager: "Shared pattern logic"
+presentation_layer.questions_routes -> core_layer.ai_service: "AI interactions"
 presentation_layer.api_schemas -> presentation_layer.questions_routes: "Request validation"
 
-# Shared Module Dependencies
-modules_layer.ai_service -> modules_layer.openrouter_client: "API communication"
-modules_layer.pattern_manager -> modules_layer.pattern_input: "Input validation"
-modules_layer.pattern_manager -> modules_layer.pattern_output: "Output definition"
-infrastructure_layer.output_coordinator -> infrastructure_layer.content_extractor: "Content processing"
-infrastructure_layer.output_coordinator -> infrastructure_layer.file_writer_chain: "File operations"
-modules_layer.message_builder -> modules_layer.pattern_manager: "Template application"
-modules_layer.question_processor -> modules_layer.ai_service: "AI interactions"
-modules_layer.question_processor -> modules_layer.message_builder: "Message construction"
+# Core Module Dependencies
+core_layer.ai_service -> core_layer.openrouter_client: "API communication"
+core_layer.pattern_manager -> core_layer.pattern_input: "Input validation"
+core_layer.pattern_manager -> core_layer.pattern_output: "Output definition"
+output_layer.output_coordinator -> output_layer.content_extractor: "Content processing"
+output_layer.output_coordinator -> output_layer.file_writer_chain: "File operations"
+core_layer.message_builder -> core_layer.pattern_manager: "Template application"
+core_layer.question_processor -> core_layer.ai_service: "AI interactions"
+core_layer.question_processor -> core_layer.message_builder: "Message construction"

@@ -3,14 +3,13 @@ Model Browser Tab Component.
 Handles AI model browsing and selection.
 """
 
+from textual.widgets import Static, Button, ListView, ListItem, Label, Input
+from textual.containers import Vertical, Horizontal, VerticalScroll
+from textual.message import Message
+
 from askai.core.ai import OpenRouterClient
 
 from .base_tab import BaseTabComponent
-# pylint: disable=import-error
-from .styles import (
-    Static, Button, ListView, ListItem, Label, Input,
-    Vertical, Horizontal, VerticalScroll, Message
-)
 
 
 class ModelTab(BaseTabComponent):

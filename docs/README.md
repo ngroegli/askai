@@ -60,15 +60,16 @@ d2 -t system_overview architecture_diagrams.d2 system_overview.png
 ## Quick Reference
 
 ### Key Components
-- **Main Application**: `python/askai.py` - Entry point and orchestration
-- **CLI Interface**: `python/presentation/cli/` - Command parsing and handling
-- **REST API Interface**: `python/presentation/api/` - HTTP endpoints and Swagger documentation
-- **AI Services**: `python/modules/ai/` - AI model integration via OpenRouter
-- **Pattern System**: `python/modules/patterns/` - Template-based AI interactions
-- **Question Processing**: `python/modules/questions/` - Standalone question handling
-- **Output Processing**: `python/infrastructure/output/` - Response formatting and file generation
-- **Chat Management**: `python/modules/chat/` - Persistent conversation sessions
-- **Configuration**: `python/shared/config/` - YAML-based configuration system
+- **Main Application**: `src/askai/main.py` - Entry point and orchestration
+- **CLI Interface**: `src/askai/presentation/cli/` - Command parsing and handling
+- **REST API Interface**: `src/askai/presentation/api/` - HTTP endpoints and Swagger documentation
+- **TUI Interface**: `src/askai/presentation/tui/` - Terminal UI components
+- **AI Services**: `src/askai/core/ai/` - AI model integration via OpenRouter
+- **Pattern System**: `src/askai/core/patterns/` - Template-based AI interactions
+- **Question Processing**: `src/askai/core/questions/` - Standalone question handling
+- **Output Processing**: `src/askai/output/` - Response formatting and file generation
+- **Chat Management**: `src/askai/core/chat/` - Persistent conversation sessions
+- **Configuration**: `src/askai/utils/` - YAML-based configuration system
 
 ### Architecture Highlights
 - **Layered Architecture**: Clear separation between presentation (CLI/API), application, service, and infrastructure layers
@@ -81,8 +82,8 @@ d2 -t system_overview architecture_diagrams.d2 system_overview.png
 
 ### Extension Points
 - **Custom Patterns**: Add new patterns in private patterns directory
-- **Display Formatters**: Implement new terminal and file display formats in `output/display_formatters/`
-- **File Writers**: Add specialized writers for new file types in `output/file_writers/`
+- **Display Formatters**: Implement new terminal and file display formats in `output/formatters/`
+- **File Writers**: Add specialized writers for new file types in `output/writers/`
 - **Content Processors**: Extend content processing capabilities in `output/processors/`
 - **AI Providers**: Extend for additional AI service providers
 - **Input Processors**: Add support for new file types and content sources

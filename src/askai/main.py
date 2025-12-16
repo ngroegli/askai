@@ -18,70 +18,15 @@ if src_dir not in sys.path:
 
 # Local application imports - grouped by package
 # pylint: disable=wrong-import-position
-from askai.output import OutputCoordinator
-
-from askai.core.ai import AIService
 from askai.core.chat import ChatManager
-from askai.core.messaging import MessageBuilder
-from askai.core.patterns import PatternManager
+from askai.core.patterns import PatternManager, PatternProcessor
 from askai.core.questions import QuestionProcessor
-
-from askai.presentation.cli import CommandHandler
-from askai.presentation.cli.parser import CLIParser
-from askai.presentation.tui import is_tui_available
-
-# Try to import TUI functionality with fallback
-try:
-    from askai.presentation.tui.apps.tabbed_tui_app import run_tabbed_tui
-    TUI_AVAILABLE = True
-except ImportError:
-    TUI_AVAILABLE = False
-    def run_tabbed_tui(*args, **kwargs):  # pylint: disable=unused-argument
-        """Fallback function when TUI is not available."""
-        print("TUI functionality is not available due to import issues.")
 
 from askai.utils import load_config, setup_logger, print_error_or_warnings
 
-def _process_pattern_output(resolved_pattern_id, response, *, pattern_manager=None,
-                           base_path=None, config=None, logger):
-    """Process pattern output and normalize response format."""
-    # Get pattern outputs for auto-execution handling
-    if resolved_pattern_id:
-        # Make sure pattern_manager is initialized
-        if pattern_manager is None and base_path and config:
-            pattern_manager = PatternManager(base_path, config)
-
-        if pattern_manager:
-            pattern_data = pattern_manager.get_pattern_content(resolved_pattern_id)
-            if pattern_data:
-                _ = pattern_data.get('outputs', [])
-
-    # Check if the response is already a properly formatted JSON with a 'results' field
-    return _normalize_json_response(response, logger)
-
-def _normalize_json_response(response, logger):
-    """Normalize JSON response if it contains nested results."""
-    try:
-        if isinstance(response, dict) and 'content' in response:
-            content = response['content']
-            if isinstance(content, str) and content.strip().startswith('{'):
-                parsed_json = _try_parse_results_json(content, logger)
-                if parsed_json is not None:
-                    return parsed_json
-    except (ValueError, TypeError, KeyError, AttributeError) as e:
-        logger.debug("Error checking for direct JSON: %s", str(e))
-    return response
-
-def _try_parse_results_json(content, logger):
-    """Try to parse content as JSON with results field."""
-    try:
-        parsed_json = json.loads(content)
-        if isinstance(parsed_json, dict) and 'results' in parsed_json:
-            logger.debug("Found direct JSON with results in content")
-            return parsed_json
-    except json.JSONDecodeError:
-        logger.debug("Content is not valid JSON")
-    return None
+from askai.presentation.cli import CommandHandler
+from askai.presentation.cli.parser import CLIParser
+from askai.presentation.tui.apps.tabbed_tui_app import run_tabbed_tui
 
 def display_help_fast():
     """
@@ -109,25 +54,21 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             if default_mode == 'tui':
                 # Try to launch TUI mode
                 try:
-                    if is_tui_available():
-                        # Initialize minimal components for TUI
-                        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-                        logger = setup_logger(config, False)
+                    # Initialize minimal components for TUI
+                    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                    logger = setup_logger(config, False)
 
-                        pattern_manager = PatternManager(base_path, config)
-                        chat_manager = ChatManager(config, logger)
-                        question_processor = QuestionProcessor(config, logger, base_path)
+                    pattern_manager = PatternManager(base_path, config)
+                    chat_manager = ChatManager(config, logger)
+                    question_processor = QuestionProcessor(config, logger, base_path)
 
-                        # Launch TUI
-                        run_tabbed_tui(
-                            pattern_manager=pattern_manager,
-                            chat_manager=chat_manager,
-                            question_processor=question_processor
-                        )
-                        return
-                    print("TUI mode configured but not available. Falling back to CLI help.")
-                except ImportError:
-                    print("TUI mode configured but dependencies not available. Falling back to CLI help.")
+                    # Launch TUI
+                    run_tabbed_tui(
+                        pattern_manager=pattern_manager,
+                        chat_manager=chat_manager,
+                        question_processor=question_processor
+                    )
+                    return
                 except Exception as e:
                     print(f"TUI mode failed: {e}. Falling back to CLI help.")
         except Exception:
@@ -150,46 +91,10 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     logger = setup_logger(config, args.debug)
     logger.info(json.dumps({"log_message": "AskAI started and arguments parsed"}))
 
-    # Initialize services based on what's needed
-    # Start with just the minimal components
-    chat_manager = None
-    pattern_manager = None
-    message_builder = None
-    ai_service = None
-
-    # Initialize only the components we need based on the command
-    # Check for simple command options that don't need all managers
-    simple_commands = (
-        args.list_patterns or args.view_pattern is not None or
-        args.list_chats or args.view_chat is not None or
-        args.openrouter is not None
-    )
-
-    if simple_commands:
-        # For simple commands, we only need specific managers
-        if args.list_patterns or args.view_pattern is not None:
-            pattern_manager = PatternManager(base_path, config)
-
-        if args.list_chats or args.view_chat is not None:
-            chat_manager = ChatManager(config, logger)
-
-        # Create the command handler with only what's needed
-        # Note: question_processor will be created on-demand in the handler if needed for TUI
-        command_handler = CommandHandler(pattern_manager, chat_manager, logger)
-    else:
-        # Full command execution requires all components
-        pattern_manager = PatternManager(base_path, config)
-        chat_manager = ChatManager(config, logger)
-        # Note: question_processor will be created on-demand in the handler if needed for TUI
-        command_handler = CommandHandler(pattern_manager, chat_manager, logger)
-        message_builder = MessageBuilder(pattern_manager, logger)
-        ai_service = AIService(logger)
-
-    # Initialize output handler
-    output_handler = OutputCoordinator()
-
-    # Check for incompatible combinations of pattern and chat commands
-    using_pattern = args.use_pattern is not None
+    # Initialize managers for command handling (lightweight operations)
+    pattern_manager = PatternManager(base_path, config)
+    chat_manager = ChatManager(config, logger)
+    command_handler = CommandHandler(pattern_manager, chat_manager, logger)
 
     # Handle commands in priority order - interactive mode first, then patterns
     if command_handler.handle_interactive_mode(args):
@@ -212,10 +117,6 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     # Check if chat functionality is being used
     using_chat = args.persistent_chat is not None or args.view_chat is not None
 
-    # Initialize output variables for both processing paths
-    formatted_output = ""
-    created_files = []
-
     # Warn if trying to use both pattern and chat functionality together
     if using_pattern and using_chat:
         logger.warning(json.dumps({
@@ -228,53 +129,13 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         # Force chat features to be disabled
         args.persistent_chat = None
         args.view_chat = None
-        # No chat functionality with patterns
 
-    # Create separate flows for pattern vs. chat processing
+    # Process based on mode
     if using_pattern:
         # === PATTERN MODE ===
-        # Make sure we have the required components
-        if pattern_manager is None:
-            pattern_manager = PatternManager(base_path)
-        if message_builder is None:
-            message_builder = MessageBuilder(pattern_manager, logger)
-        if ai_service is None:
-            ai_service = AIService(logger)
-
-        # Build messages for pattern and get the resolved pattern_id (after selection)
-        messages, resolved_pattern_id = message_builder.build_messages(
-            question=None,
-            file_input=None,
-            pattern_id=args.use_pattern,
-            pattern_input=args.pattern_input,
-            response_format="rawtext",  # Use default format with patterns
-            url=None,
-            image=None,
-            pdf=None,
-            image_url=None,
-            pdf_url=None,
-            model_name=getattr(args, 'model', None)
-        )
-
-        # Check if message building was cancelled
-        if messages is None:
-            sys.exit(0)
-
-        # Debug log the final messages
-        logger.debug(json.dumps({"log_message": "Pattern messages content", "messages": messages}))
-
-        # Get AI response for pattern
-        response = ai_service.get_ai_response(
-            messages=messages,
-            model_name=None,  # Don't override model for patterns
-            pattern_id=resolved_pattern_id,
-            debug=args.debug,
-            pattern_manager=pattern_manager,
-            enable_url_search=False
-        )
-
-        # No chat history for patterns
-
+        # Use the dedicated pattern processor
+        pattern_processor = PatternProcessor(config, logger, base_path)
+        formatted_output, created_files = pattern_processor.process_pattern(args)
     else:
         # === CHAT/QUESTION MODE ===
         # Use the dedicated question processor
@@ -285,43 +146,13 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         formatted_output = response_obj.content
         created_files = response_obj.created_files
 
-    # Process output based on mode
-    if using_pattern:
-        response = _process_pattern_output(
-            resolved_pattern_id, response,
-            pattern_manager=pattern_manager, base_path=base_path, config=config, logger=logger
-        )
-
-        logger.debug("Using pattern manager to handle response for %s", resolved_pattern_id)
-        # Make sure pattern_manager is initialized
-        if pattern_manager is None:
-            pattern_manager = PatternManager(base_path)
-
-        formatted_output, created_files = pattern_manager.process_pattern_response(
-            resolved_pattern_id,
-            response,
-            output_handler
-        )
-    # For question mode, the output is already processed by QuestionProcessor
-    # No additional processing needed
-
     # Print the formatted output for both pattern and non-pattern responses
     print(formatted_output)
 
-    # Execute any pending operations (commands and files) after display is shown
-    # Only for pattern mode - question mode already handles its own output
-    if using_pattern:
-        additional_files = output_handler.execute_pending_operations()
-        # Combine created files from both output processing and pending operations
-        all_created_files = (created_files or []) + additional_files
-    else:
-        # For question mode, files are already handled by QuestionProcessor
-        all_created_files = created_files or []
-
     # Log created files
-    if all_created_files:
-        print(f"\nCreated output files: {', '.join(all_created_files)}")
-        logger.info("Created output files: %s", ', '.join(all_created_files))
+    if created_files:
+        print(f"\nCreated output files: {', '.join(created_files)}")
+        logger.info("Created output files: %s", ', '.join(created_files))
 
 
 if __name__ == "__main__":

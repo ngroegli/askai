@@ -4,14 +4,13 @@ Simplified Tabbed TUI Application using component-based architecture.
 Each tab is now a separate, reusable component.
 """
 
+from pathlib import Path
 from textual.app import App
 from textual.widgets import Header, Footer, TabbedContent, TabPane
 
-# Import our components and common styles
+# Import our components from parent's components directory
 # pylint: disable=import-error
-from .styles import COMMON_STYLES
-# pylint: disable=import-error
-from .components import QuestionTab, PatternTab, ChatTab, ModelTab, CreditsTab
+from ..components import QuestionTab, PatternTab, ChatTab, ModelTab, CreditsTab
 
 TEXTUAL_AVAILABLE = True
 
@@ -29,116 +28,8 @@ class TabbedTUIApp(App):  # pylint: disable=too-many-instance-attributes
         ("f6", "focus_credits", "Credits"),
     ]
 
-    CSS = f"""
-    /* Main Application Styles */
-    Screen {{
-        background: #0f172a;
-    }}
-
-    Header {{
-        background: #1e293b;
-        color: #00FFFF;
-        dock: top;
-        height: 3;
-    }}
-
-    Footer {{
-        background: #1e293b;
-        color: #87CEEB;
-        dock: bottom;
-        height: 3;
-    }}
-
-    /* Tab Content Styles */
-    TabbedContent {{
-        background: #0f172a;
-        margin: 1;
-    }}
-
-    TabPane {{
-        background: #0f172a;
-        padding: 1;
-    }}
-
-    {COMMON_STYLES}
-
-    /* Additional app-specific styles */
-    .question-input {{
-        height: 4;
-        max-height: 4;
-    }}
-
-    .question-form {{
-        margin: 1;
-    }}
-
-    .question-main-layout {{
-        height: 100%;
-    }}
-
-    .question-form-panel {{
-        width: 1fr;
-        margin-right: 1;
-    }}
-
-    .answer-panel {{
-        width: 1fr;
-        margin-left: 1;
-    }}
-
-    .input-row, .select-row {{
-        height: auto;
-        margin: 0;
-    }}
-
-    .input-column, .select-column {{
-        margin: 0 1;
-    }}
-
-    .pattern-browser-container,
-    .chat-browser-container,
-    .model-browser-container {{
-        height: 100%;
-    }}
-
-    .pattern-list-panel,
-    .chat-list-panel,
-    .model-list-panel {{
-        width: 1fr;
-        margin-right: 1;
-    }}
-
-    .pattern-details-panel,
-    .chat-details-panel,
-    .model-details-panel {{
-        width: 2fr;
-    }}
-
-    .hidden {{
-        display: none;
-    }}
-
-    /* Pattern Details Box */
-    .pattern-details-box {{
-        background: #1e293b;
-        border: solid #00FFFF;
-        height: 1fr;
-        padding: 1;
-    }}
-
-    /* Pattern List Box */
-    .pattern-list-box {{
-        background: #1e293b;
-        border: solid #00FFFF;
-        height: 1fr;
-    }}
-
-    /* Remove border from ListView when inside ScrollableContainer */
-    .pattern-list-box ListView {{
-        border: none;
-        background: transparent;
-    }}
-    """
+    # Load CSS from external file
+    CSS_PATH = Path(__file__).parent / "styles.tcss"
 
     def __init__(self, pattern_manager=None, chat_manager=None, question_processor=None):
         super().__init__()
@@ -216,14 +107,8 @@ class TabbedTUIApp(App):  # pylint: disable=too-many-instance-attributes
         """Handle question submission from QuestionTab."""
         question_data = event.question_data
 
-        # Update status
-        if self.question_tab:
-            self.question_tab.update_status("🔄 Processing question...")
-
         try:
             if not self.question_processor:
-                if self.question_tab:
-                    self.question_tab.update_status("❌ Question processor not available")
                 return
 
             # Create a simple args object from question_data
@@ -254,81 +139,10 @@ class TabbedTUIApp(App):  # pylint: disable=too-many-instance-attributes
                 # Display the answer
                 if self.question_tab:
                     self.question_tab.display_answer(response.content)
-                    self.question_tab.update_status("✅ Question processed successfully!")
-            else:
-                if self.question_tab:
-                    self.question_tab.update_status("❌ No response received")
 
         except Exception as e:
             if self.question_tab:
-                self.question_tab.update_status(f"❌ Error processing question: {str(e)}")
                 self.question_tab.display_answer(f"Error: {str(e)}")
-
-    async def on_pattern_tab_pattern_selected(self, event) -> None:
-        """Handle pattern selection from PatternTab."""
-        pattern_data = event.pattern_data
-        pattern_input = event.pattern_input
-
-        # Update status
-        if self.pattern_tab:
-            self.pattern_tab.update_status("🔄 Executing pattern...")
-
-        try:
-            # For now, just validate the pattern and inputs
-            pattern_id = pattern_data.get('pattern_id', pattern_data.get('name', ''))
-
-            if self.pattern_manager:
-                # Validate that we have the pattern
-                pattern_content = self.pattern_manager.get_pattern_content(pattern_id)
-                if pattern_content:
-                    input_summary = ""
-                    if pattern_input:
-                        input_summary = f" with {len(pattern_input)} inputs"
-
-                    if self.pattern_tab:
-                        status_msg = f"✅ Pattern '{pattern_id}' ready for execution{input_summary}"
-                        self.pattern_tab.update_status(status_msg)
-                else:
-                    if self.pattern_tab:
-                        self.pattern_tab.update_status(f"❌ Pattern '{pattern_id}' not found")
-            else:
-                if self.pattern_tab:
-                    self.pattern_tab.update_status("❌ Pattern manager not available")
-
-        except Exception as e:
-            if self.pattern_tab:
-                self.pattern_tab.update_status(f"❌ Pattern execution failed: {str(e)}")
-
-    async def on_chat_tab_chat_selected(self, event) -> None:
-        """Handle chat selection from ChatTab."""
-        chat_data = event.chat_data
-
-        # Update status
-        if self.chat_tab:
-            self.chat_tab.update_status(f"✅ Selected chat: {chat_data.get('chat_id', 'Unknown')}")
-
-    async def on_chat_tab_chat_action(self, event) -> None:
-        """Handle chat actions from ChatTab."""
-        action = event.action
-        chat_data = event.chat_data
-
-        if action == "new_chat":
-            # Handle new chat creation
-            if self.chat_tab:
-                self.chat_tab.update_status("✅ New chat created!")
-        elif action == "delete_chat" and chat_data:
-            # Handle chat deletion
-            chat_id = chat_data.get('chat_id', 'Unknown')
-            if self.chat_tab:
-                self.chat_tab.update_status(f"✅ Deleted chat: {chat_id}")
-
-    async def on_model_tab_model_selected(self, event) -> None:
-        """Handle model selection from ModelTab."""
-        model_data = event.model_data
-
-        # Update status
-        if self.model_tab:
-            self.model_tab.update_status(f"✅ Selected model: {model_data.get('name', 'Unknown')}")
 
     # Key binding actions
     def action_focus_question(self) -> None:
