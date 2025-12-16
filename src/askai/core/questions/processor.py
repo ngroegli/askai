@@ -101,8 +101,7 @@ class QuestionProcessor:  # pylint: disable=too-few-public-methods,too-many-inst
         # Store chat history if using persistent chat
         if chat_id:
             self.chat_manager.store_chat_conversation(
-                chat_id, messages, response,
-                resolved_system_id=None, system_manager=None  # No pattern data in question mode
+                chat_id, messages, response
             )
 
         # Process the output
