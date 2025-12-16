@@ -5,8 +5,9 @@ Manages AI response generation and model configuration logic.
 
 import json
 import threading
+from typing import Any, Dict, List, Optional
 from askai.utils import tqdm_spinner, load_config
-from .models import ModelConfiguration, ModelProvider
+from .models import ModelConfiguration, ModelProvider, ModelConfigurationBuilder
 from .openrouter import OpenRouterClient
 
 
@@ -17,8 +18,18 @@ class AIService:
     def __init__(self, logger):
         self.logger = logger
 
-    def get_model_configuration(self, model_name, config, pattern_data=None):
-        """Get model configuration based on priority: CLI > Pattern config > Global config.
+    def get_model_configuration(
+        self,
+        model_name: Optional[str],
+        config: Dict[str, Any],
+        pattern_data: Optional[Dict[str, Any]] = None
+    ) -> ModelConfiguration:
+        """Get model configuration based on priority: Config > Pattern > CLI args.
+
+        Uses ModelConfigurationBuilder to properly apply defaults from:
+        1. Config file (user's global preferences)
+        2. Pattern configuration (pattern-specific overrides)
+        3. CLI arguments (user overrides)
 
         Args:
             model_name: Optional model name from CLI
@@ -26,17 +37,22 @@ class AIService:
             pattern_data: Optional pattern data containing pattern-specific configuration
 
         Returns:
-            ModelConfiguration: The model configuration to use
+            The configured ModelConfiguration instance
         """
+        # Start with config file defaults
+        builder = ModelConfigurationBuilder(config).from_config_defaults()
+
+        # Determine provider and model_name
+        provider = ModelProvider.OPENROUTER
+        final_model_name = config.get("default_model", "")
 
         # Priority 1: Pattern configuration
-        if pattern_data and isinstance(pattern_data, dict):
-            # Configuration is nested under the 'configuration' key
+        if pattern_data:
             pattern_config = pattern_data.get('configuration')
 
             if pattern_config:
+                # Check if we have a pre-built ModelConfiguration object
                 if hasattr(pattern_config, 'model') and pattern_config.model:
-                    # Direct access to ModelConfiguration object from PatternConfiguration
                     model_config = pattern_config.model
                     self.logger.info(json.dumps({
                         "log_message": "Using model configuration from pattern",
@@ -44,64 +60,60 @@ class AIService:
                         "provider": model_config.provider.value if model_config.provider else 'openrouter'
                     }))
                     return model_config
-                if isinstance(pattern_config, dict) and 'model' in pattern_config:
-                    # Handle dictionary format
-                    self.logger.info("Creating model configuration from dict: %s", pattern_config)
-                    try:
-                        model_data = pattern_config['model']
-                        return ModelConfiguration(
-                            provider=model_data.get('provider', 'openrouter'),
-                            model_name=model_data.get('model_name'),
-                            temperature=model_data.get('temperature', 0.7),
-                            max_tokens=model_data.get('max_tokens'),
-                            stop_sequences=model_data.get('stop_sequences'),
-                            custom_parameters=model_data.get('custom_parameters')
-                        )
-                    except (KeyError, ValueError, TypeError) as e:
-                        self.logger.error("Error creating model configuration from dict: %s", e)
 
-        # Priority 2: Explicit model name
+                # Handle dictionary format with pattern overrides
+                if isinstance(pattern_config, dict):
+                    if 'model' in pattern_config:
+                        model_data = pattern_config['model']
+                        if isinstance(model_data, dict):
+                            # Apply pattern's model config
+                            builder.from_pattern(model_data)
+                            if 'provider' in model_data:
+                                provider = model_data['provider']
+                            if 'model_name' in model_data:
+                                final_model_name = model_data['model_name']
+                            self.logger.info("Applied model configuration from pattern dict")
+
+        # Priority 2: Explicit model name from CLI
         if model_name:
+            final_model_name = model_name
             self.logger.info(json.dumps({
-                "log_message": "Using explicit model configuration",
+                "log_message": "Using explicit model from CLI",
                 "model": model_name
             }))
-            # Create a proper configuration with defaults preserved
-            return ModelConfiguration(
-                provider=ModelProvider.OPENROUTER,
-                model_name=model_name,
-                temperature=0.7,  # Use same defaults as in ModelConfiguration dataclass
-                max_tokens=None,
-                stop_sequences=None,
-                custom_parameters=None,
-                web_search=False,
-                web_search_context="medium",
-                web_plugin=False,
-                web_max_results=5,
-                web_search_prompt=None
-            )
 
-        # Priority 3: Global configuration
-        self.logger.info(json.dumps({
-            "log_message": "Using global default model configuration",
-            "model": config["default_model"]
-        }))
-        return ModelConfiguration(
-            provider=ModelProvider.OPENROUTER,
-            model_name=config["default_model"],
-            temperature=0.7,  # Use same defaults as in ModelConfiguration dataclass
-            max_tokens=None,
-            stop_sequences=None,
-            custom_parameters=None,
-            web_search=False,
-            web_search_context="medium",
-            web_plugin=False,
-            web_max_results=5,
-            web_search_prompt=None
+        # Build the final configuration
+        model_config = builder.build(provider=provider, model_name=final_model_name)
+
+        # Get provider value for logging
+        provider_value = (
+            model_config.provider.value
+            if isinstance(model_config.provider, ModelProvider)
+            else str(model_config.provider)
         )
 
-    def get_ai_response(self, messages, model_name=None, *, pattern_id=None,
-                       debug=False, pattern_manager=None, enable_url_search=False):
+        self.logger.info(json.dumps({
+            "log_message": "Built model configuration",
+            "model_name": model_config.model_name,
+            "provider": provider_value,
+            "temperature": model_config.temperature,
+            "max_tokens": model_config.max_tokens,
+            "web_search": model_config.web_search,
+            "web_plugin": model_config.web_plugin
+        }))
+
+        return model_config
+
+    def get_ai_response(
+        self,
+        messages: List[Dict[str, Any]],
+        model_name: Optional[str] = None,
+        *,
+        pattern_id: Optional[str] = None,
+        debug: bool = False,
+        pattern_manager: Any = None,
+        enable_url_search: bool = False
+    ) -> Dict[str, Any]:
         # pylint: disable=too-many-locals
         """Get response from AI model with progress spinner.
 
@@ -112,6 +124,9 @@ class AIService:
             debug: Whether to enable debug mode
             pattern_manager: PatternManager instance for accessing pattern data
             enable_url_search: Whether to enable web search for URL analysis
+
+        Returns:
+            Response dictionary from the AI model
         """
         stop_spinner = threading.Event()
         spinner = threading.Thread(target=tqdm_spinner, args=(stop_spinner,))
