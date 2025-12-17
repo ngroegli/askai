@@ -164,9 +164,11 @@ class ModelConfigurationBuilder:
         self._values.update({
             'temperature': self.config.get('temperature', self.SYSTEM_DEFAULTS['temperature']),
             'max_tokens': self.config.get('max_tokens', self.SYSTEM_DEFAULTS['max_tokens']),
-            'web_search': web_search_config.get('enabled', self.SYSTEM_DEFAULTS['web_search']),
+            # Note: Don't set web_search or web_plugin from global 'enabled' - that only
+            # configures availability. Web search should only be enabled when explicitly
+            # requested (e.g., enable_url_search=True or pattern/CLI override)
+            'web_search': web_search_config.get('false', self.SYSTEM_DEFAULTS['web_search']),
             'web_search_context': self.SYSTEM_DEFAULTS['web_search_context'],
-            'web_plugin': web_search_config.get('method') == 'plugin',
             'web_max_results': web_search_config.get('max_results', self.SYSTEM_DEFAULTS['web_max_results']),
         })
         return self
