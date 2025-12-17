@@ -136,13 +136,13 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         # Use the dedicated pattern processor
         pattern_processor = PatternProcessor(config, logger, base_path)
         result = pattern_processor.process_pattern(args)
-        
+
         if result:
             formatted_output, created_files, output_handler = result
-            
+
             # Print the formatted output FIRST
             print(formatted_output)
-            
+
             # THEN execute pending operations (commands, file creation) AFTER display
             additional_files = output_handler.execute_pending_operations()
             created_files = (created_files or []) + additional_files
