@@ -55,25 +55,32 @@ The system follows a layered architecture pattern with clear separation of conce
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                       │
-│               (CLI Interface & REST API)                   │
+│              (CLI, TUI & REST API)                         │
+│                  src/askai/presentation/                    │
 ├─────────────────────────────────────────────────────────────┤
-│                    Application Layer                        │
-│              (Business Logic & Orchestration)              │
+│                       Core Layer                            │
+│       (Business Logic: AI, Patterns, Chat, Messaging)      │
+│                    src/askai/core/                          │
 ├─────────────────────────────────────────────────────────────┤
-│                     Service Layer                          │
-│          (AI Services, Pattern Management, I/O)            │
+│                      Output Layer                           │
+│        (Response Processing & File Operations)             │
+│                   src/askai/output/                         │
 ├─────────────────────────────────────────────────────────────┤
-│                  Infrastructure Layer                      │
-│         (Configuration, Logging, File System)              │
+│                      Utils Layer                            │
+│          (Configuration, Logging, Helpers)                 │
+│                    src/askai/utils/                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### Layer Responsibilities
 
-**Presentation Layer**: Command-line argument parsing, user interaction, help display, REST API endpoints, Swagger documentation
-**Application Layer**: Main orchestration logic, workflow coordination, component initialization
-**Service Layer**: AI communication, pattern processing, output handling, chat management
-**Infrastructure Layer**: Configuration loading, logging, file I/O, system integration
+**Presentation Layer** (`src/askai/presentation/`): CLI/TUI argument parsing, user interaction, REST API endpoints, Swagger documentation
+
+**Core Layer** (`src/askai/core/`): AI communication, pattern processing, question handling, chat management, message building
+
+**Output Layer** (`src/askai/output/`): Response processing, content extraction, file writers, display formatters
+
+**Utils Layer** (`src/askai/utils/`): Configuration loading, logging infrastructure, file I/O helpers, shared utilities
 
 ## Core Components
 
@@ -726,7 +733,7 @@ Deferred Execution Flow:
 ### Core Components
 
 #### 1. OutputCoordinator - Main Facade & Orchestrator
-**Location**: `python/output/output_coordinator.py`
+**Location**: `src/askai/output/coordinator.py`
 
 The `OutputCoordinator` serves as the unified entry point for all output operations and orchestrates the new deferred execution pattern:
 
@@ -745,7 +752,7 @@ The `OutputCoordinator` serves as the unified entry point for all output operati
 - Pattern content processing with proper ordering (explanation → execution → file creation)
 
 #### 2. Content Processors Package
-**Location**: `python/output/processors/`
+**Location**: `src/askai/output/processors/`
 
 ##### ContentExtractor (`content_extractor.py`) - Enhanced
 - **Enhanced JSON Parsing**: Handles both JSON strings and pre-parsed response structures
@@ -781,7 +788,7 @@ The `OutputCoordinator` serves as the unified entry point for all output operati
 - Ensures secure file system operations
 
 #### 3. Display Formatters Package
-**Location**: `python/output/display_formatters/`
+**Location**: `src/askai/output/formatters/`
 
 ##### TerminalFormatter (`terminal_formatter.py`)
 - Formats content for terminal/CLI display
@@ -918,7 +925,7 @@ logging:
 - Support custom input types and output formats
 
 ### 2. Output Formatters
-- Implement new formatters in `output/display_formatters/`
+- Implement new formatters in `output/formatters/`
 - Support custom display and file generation logic
 - Register new formats in OutputCoordinator
 

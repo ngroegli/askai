@@ -88,7 +88,7 @@ pip install -r requirements.txt
 # Start development server
 make api-dev
 # or
-cd python/presentation/api && python run.py --debug
+cd src/askai/presentation/api && python run.py --debug
 
 # Test API
 make api-test

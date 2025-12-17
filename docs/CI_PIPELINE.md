@@ -272,10 +272,10 @@ Local script to run CI checks before pushing code.
 ### Pylint Failures
 ```bash
 # Run Pylint locally to see detailed errors
-PYTHONPATH=python pylint --rcfile=.pylintrc python/**/*.py
+pylint src/askai/**/*.py
 
 # Focus on critical errors only
-PYTHONPATH=python pylint --rcfile=.pylintrc --disable=C,W,R,I --enable=E python/**/*.py
+pylint --disable=C,W,R,I --enable=E src/askai/**/*.py
 ```
 
 ### Unit Test Failures
@@ -353,10 +353,10 @@ The README includes CI status badges showing current build status:
 #### Pylint Failures
 ```bash
 # Run Pylint locally to see detailed errors
-PYTHONPATH=python pylint --rcfile=.pylintrc python/**/*.py
+pylint src/askai/**/*.py
 
 # Focus on critical errors only
-PYTHONPATH=python pylint --rcfile=.pylintrc --disable=C,W,R,I --enable=E python/**/*.py
+pylint --disable=C,W,R,I --enable=E src/askai/**/*.py
 ```
 
 #### Unit Test Failures

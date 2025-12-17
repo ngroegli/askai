@@ -17,43 +17,43 @@ presentation: "Presentation Layer" {
   }
 }
 
-# Modules Layer - Chat Management
-modules: "Modules Layer" {
+# Core Layer - Chat Management
+core: "Core Layer" {
   shape: rectangle
   style.fill: "#E8F5E9" # Light Green background
 
-  session_check: "Session Check\n(chat/chat_manager.py)" {
+  session_check: "Session Check\n(core/chat/manager.py)" {
     shape: diamond
     style.fill: "#A5D6A7" # Light Green (data processing)
   }
 
-  new_session: "Create New Session\n(chat/)" {
+  new_session: "Create New Session\n(core/chat/)" {
     shape: rectangle
     style.fill: "#A5D6A7" # Light Green
   }
 
-  load_history: "Load Chat History\n(chat/)" {
+  load_history: "Load Chat History\n(core/chat/)" {
     shape: rectangle
     style.fill: "#A5D6A7" # Light Green
   }
 
-  context_build: "Build Context\n(messaging/builder.py)" {
+  context_build: "Build Context\n(core/messaging/builder.py)" {
     shape: rectangle
     style.fill: "#A5D6A7" # Light Green
   }
 
-  ai_call: "AI Service Call\n(ai/ai_service.py)" {
+  ai_call: "AI Service Call\n(core/ai/service.py)" {
     shape: rectangle
     style.fill: "#81C784" # Slightly different green for AI
   }
 }
 
-# Infrastructure Layer - Output Processing
-infrastructure: "Infrastructure Layer" {
+# Output Layer
+output: "Output Layer" {
   shape: rectangle
   style.fill: "#FFF9C4" # Light Yellow background
 
-  response_process: "Process Response\n(output/output_coordinator.py)" {
+  response_process: "Process Response\n(output/coordinator.py)" {
     shape: rectangle
     style.fill: "#FFF176" # Light Yellow
   }
@@ -64,12 +64,12 @@ infrastructure: "Infrastructure Layer" {
   }
 }
 
-# Shared Layer - Persistence
-shared: "Shared Layer" {
+# Utils Layer - Persistence
+utils: "Utils Layer" {
   shape: rectangle
   style.fill: "#FAFAFA" # Light Gray background
 
-  store_history: "Store in History\n(via chat/ using utils/)" {
+  store_history: "Store in History\n(via core/chat/ using utils/)" {
     shape: rectangle
     style.fill: "#BDBDBD" # Light Gray (infra)
   }
@@ -88,35 +88,35 @@ external: "External Services" {
 
 # Main flow between layers
 chat_request -> presentation: "User Command"
-presentation -> modules: "Parsed Chat Request"
-modules -> external: "AI Messages"
-external -> infrastructure: "AI Response"
-infrastructure -> shared: "Store Results"
-infrastructure -> presentation: "Formatted Output"
+presentation -> core: "Parsed Chat Request"
+core -> external: "AI Messages"
+external -> output: "AI Response"
+output -> utils: "Store Results"
+output -> presentation: "Formatted Output"
 presentation -> chat_request: "User Feedback"
 
 # Detailed component flow
-presentation.cli_parse -> modules.session_check: "Chat ID"
-modules.session_check -> modules.new_session: "New Session"
-modules.session_check -> modules.load_history: "Existing Session"
-modules.new_session -> modules.context_build: "Empty Context"
-modules.load_history -> modules.context_build: "Historical Context"
-modules.context_build -> modules.ai_call: "Complete Messages"
-modules.ai_call -> external.openrouter: "HTTP Request"
-external.openrouter -> infrastructure.response_process: "AI Response"
-infrastructure.response_process -> shared.store_history: "Formatted Output"
-infrastructure.response_process -> infrastructure.display_result: "User Output"
-shared.store_history -> infrastructure.display_result: "Success Confirmation"
+presentation.cli_parse -> core.session_check: "Chat ID"
+core.session_check -> core.new_session: "New Session"
+core.session_check -> core.load_history: "Existing Session"
+core.new_session -> core.context_build: "Empty Context"
+core.load_history -> core.context_build: "Historical Context"
+core.context_build -> core.ai_call: "Complete Messages"
+core.ai_call -> external.openrouter: "HTTP Request"
+external.openrouter -> output.response_process: "AI Response"
+output.response_process -> utils.store_history: "Formatted Output"
+output.response_process -> output.display_result: "User Output"
+utils.store_history -> output.display_result: "Success Confirmation"
 
 # Chat Management Details
-modules.session_check: {
+core.session_check: {
   label: "• Check existing chat files\n• Validate chat ID format\n• Load metadata"
 }
 
-modules.context_build: {
+core.context_build: {
   label: "• Combine chat history\n• Add current message\n• Maintain context limits"
 }
 
-shared.store_history: {
+utils.store_history: {
   label: "• JSON chat file format\n• Timestamp tracking\n• Metadata updates"
 }
