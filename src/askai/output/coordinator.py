@@ -305,14 +305,22 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
         return "No content found for any pattern outputs"
 
     def _process_pattern_outputs_in_order(self, pattern_contents: Dict[str, str], pattern_outputs: List) -> str:
-        """Process pattern outputs in their definition order, handling displays and storing commands.
+        """Process pattern outputs in their exact definition order.
+
+        This method:
+        - Collects DISPLAY outputs and formats them for immediate display
+        - Stores EXECUTE outputs in pending_commands for execution after display
+        - Preserves the exact order from pattern definition
+
+        The formatted display string is returned and shown to the user first,
+        then execute_pending_operations() is called to run commands in order.
 
         Args:
             pattern_contents: Dict mapping output names to extracted content
             pattern_outputs: List of pattern output definitions in their definition order
 
         Returns:
-            Formatted string for display outputs only
+            Formatted string containing display outputs
         """
         if not pattern_contents:
             # If no content was extracted at all, provide specific missing output information
@@ -326,32 +334,24 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
         # Clear any existing pending commands
         self.pending_commands = []
 
+        # Collect display outputs and store commands with position
         formatted_parts = []
 
-        # Process outputs in definition order
-        for i, output in enumerate(pattern_outputs):
+        for position, output in enumerate(pattern_outputs):
             if output.name in pattern_contents:
                 content = pattern_contents[output.name]
 
                 if output.action == OutputAction.DISPLAY:
-                    # Add to formatted output immediately
+                    # Add to formatted output for immediate display
                     formatted_parts.append(f"{output.name.upper()}:\n{content}\n")
 
                 elif output.action == OutputAction.EXECUTE:
-                    # Check if there are any display outputs after this command
-                    has_display_after = any(
-                        later_output.action == OutputAction.DISPLAY
-                        for later_output in pattern_outputs[i+1:]
-                        if later_output.name in pattern_contents
-                    )
+                    # Store command with its position for later execution
+                    # Position ensures commands execute in definition order
+                    self.pending_commands.append((position, content, output.name))
 
-                    if has_display_after:
-                        # Execute immediately since there are displays coming after
-                        PatternOutput.execute_command(content, output.name)
-                    else:
-                        # Store for later execution (traditional behavior when command is last)
-                        self.pending_commands.append((i, content, output.name))
-
+        # Return formatted display content
+        # Commands will be executed when execute_pending_operations() is called
         if formatted_parts:
             return "\n".join(formatted_parts)
         return "No display content found for any pattern outputs"

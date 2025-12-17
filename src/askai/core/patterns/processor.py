@@ -34,7 +34,7 @@ class PatternProcessor:
         self.ai_service = AIService(logger)
         self.output_handler = OutputCoordinator()
 
-    def process_pattern(self, args) -> Optional[Tuple[str, List[str]]]:
+    def process_pattern(self, args) -> Optional[Tuple[str, List[str], OutputCoordinator]]:
         """
         Process a pattern-based request.
 
@@ -42,7 +42,8 @@ class PatternProcessor:
             args: Parsed command line arguments
 
         Returns:
-            Tuple of (formatted_output, created_files) or None if cancelled
+            Tuple of (formatted_output, created_files, output_handler) or None if cancelled
+            The output_handler should have execute_pending_operations() called AFTER displaying formatted_output
         """
         # Build messages for pattern
         messages, resolved_pattern_id = self.message_builder.build_messages(
@@ -91,11 +92,9 @@ class PatternProcessor:
             self.output_handler
         )
 
-        # Execute pending operations (commands, file creation)
-        additional_files = self.output_handler.execute_pending_operations()
-        all_created_files = (created_files or []) + additional_files
-
-        return formatted_output, all_created_files
+        # DO NOT execute pending operations here - they should run AFTER display
+        # Return output handler so caller can execute operations at the right time
+        return formatted_output, created_files, self.output_handler
 
     def _normalize_response(self, response: Any) -> Any:
         """

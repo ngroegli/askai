@@ -135,7 +135,20 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         # === PATTERN MODE ===
         # Use the dedicated pattern processor
         pattern_processor = PatternProcessor(config, logger, base_path)
-        formatted_output, created_files = pattern_processor.process_pattern(args)
+        result = pattern_processor.process_pattern(args)
+        
+        if result:
+            formatted_output, created_files, output_handler = result
+            
+            # Print the formatted output FIRST
+            print(formatted_output)
+            
+            # THEN execute pending operations (commands, file creation) AFTER display
+            additional_files = output_handler.execute_pending_operations()
+            created_files = (created_files or []) + additional_files
+        else:
+            formatted_output = None
+            created_files = []
     else:
         # === CHAT/QUESTION MODE ===
         # Use the dedicated question processor
@@ -146,8 +159,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         formatted_output = response_obj.content
         created_files = response_obj.created_files
 
-    # Print the formatted output for both pattern and non-pattern responses
-    print(formatted_output)
+        # Print the formatted output for non-pattern responses
+        print(formatted_output)
 
     # Log created files
     if created_files:
