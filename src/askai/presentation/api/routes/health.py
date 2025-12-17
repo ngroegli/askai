@@ -1,8 +1,13 @@
 """
 Health check and status endpoints for the AskAI API.
 """
+import datetime
+import time
+
 from flask import current_app
 from flask_restx import Namespace, Resource, fields
+
+from askai._version import __version__
 
 # Create namespace
 health_ns = Namespace('health', description='Health check and status operations')
@@ -33,17 +38,14 @@ class Health(Resource):
 
         Returns basic health information about the service.
         """
-        import datetime  # pylint: disable=import-outside-toplevel
-        import time  # pylint: disable=import-outside-toplevel
-
         # Get app start time (simplified for now)
         start_time = getattr(current_app, 'start_time', time.time())
         uptime = time.time() - start_time
 
         return {
             'status': 'healthy',
-            'version': '1.0.0',
-            'timestamp': datetime.datetime.utcnow(),
+            'version': __version__,
+            'timestamp': datetime.datetime.now(datetime.timezone.utc),
             'uptime': uptime
         }
 

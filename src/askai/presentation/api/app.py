@@ -15,6 +15,7 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, "src"))
 
 # pylint: disable=wrong-import-position
+from askai._version import __version__
 from askai.utils.config import load_config
 from askai.utils.logging import setup_logger
 from askai.utils import get_logger
@@ -85,7 +86,7 @@ def create_app(config=None):
         app,
         doc='/docs/',
         title='AskAI API',
-        version='1.0.0',
+        version=__version__,
         description='REST API for AskAI CLI functionality',
         contact='AskAI Team',
         license='MIT',
@@ -110,7 +111,7 @@ def create_app(config=None):
         """API information endpoint."""
         return jsonify({
             'name': 'AskAI API',
-            'version': '1.0.0',
+            'version': __version__,
             'description': (
                 'REST API for AskAI CLI functionality - '
                 'AI-powered question processing and pattern management'

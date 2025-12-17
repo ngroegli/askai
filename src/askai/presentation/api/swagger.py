@@ -1,11 +1,12 @@
 """
 Swagger/OpenAPI configuration for the AskAI API.
 """
+from askai._version import __version__
 
 # API Documentation Configuration
 API_CONFIG = {
     'title': 'AskAI API',
-    'version': '1.0.0',
+    'version': __version__,
     'description': """
     REST API for AskAI CLI functionality.
 
