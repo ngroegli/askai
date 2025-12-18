@@ -2,6 +2,18 @@
 
 This document explains CodeQL security warnings that are **expected and safe** for the askai-cli project.
 
+## ⚠️ Quick Action Required
+
+**CodeQL will report 7 "Uncontrolled data used in path expression" warnings.**
+
+These are **FALSE POSITIVES** - not actual security vulnerabilities.
+
+**To dismiss them on GitHub:**
+1. Go to the Security tab → Code scanning alerts
+2. For each of the 7 alerts, click "Dismiss alert"
+3. Select "False positive" as the reason
+4. Add comment: `CLI tool - users explicitly specify files to access. All paths validated. See .github/codeql/FALSE_POSITIVES.md`
+
 ## Summary
 
 CodeQL reports 7 "Uncontrolled data used in path expression" warnings. These are **false positives** because askai-cli is a command-line interface tool where users intentionally specify file paths they want to access.
@@ -19,7 +31,7 @@ The key distinction:
 
 ## Affected Files and Mitigations
 
-### 1. `src/askai/utils/helpers.py` (5 warnings - lines 171, 174, 177, 182, 205)
+### 1. `src/askai/utils/helpers.py` (5 warnings - lines 171, 175, 179, 184, 212)
 
 **Function**: `_validate_file_access()` and `_read_file_content()`
 
@@ -34,7 +46,7 @@ The key distinction:
 
 **Why Safe**: All paths are validated before use. Users can only access what they already have OS permissions for.
 
-### 2. `src/askai/presentation/api/routes/patterns.py` (2 warnings - lines 65, 77)
+### 2. `src/askai/presentation/api/routes/patterns.py` (2 warnings - lines 66, 80)
 
 **Function**: `_save_uploaded_file()`
 
