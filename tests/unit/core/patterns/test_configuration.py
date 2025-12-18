@@ -12,9 +12,8 @@ sys.path.insert(0, os.path.join(project_root, "tests"))
 
 # pylint: disable=wrong-import-position,import-error
 from unit.test_base import BaseUnitTest
+from askai.core.ai.models import ModelProvider, ModelConfiguration
 from askai.core.patterns.configuration import (
-    ModelProvider,
-    ModelConfiguration,
     PatternPurpose,
     PatternFunctionality,
     PatternConfiguration
