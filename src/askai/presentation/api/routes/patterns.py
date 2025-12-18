@@ -32,12 +32,16 @@ patterns_ns = Namespace('patterns', description='Pattern management operations')
 def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") -> str:
     """Save an uploaded file to a temporary location and return the path.
 
+    Security: This function uses tempfile.mkstemp() which creates files in a secure
+    temporary directory. The returned path is guaranteed to be within the system's
+    temp directory and not accessible via path traversal.
+
     Args:
         uploaded_file: Flask FileStorage object from file upload
         prefix: Prefix for the temporary filename
 
     Returns:
-        str: Path to the saved temporary file
+        str: Path to the saved temporary file (within secure temp directory)
 
     Raises:
         ValueError: If file is invalid or cannot be saved
@@ -49,18 +53,27 @@ def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") ->
     filename = uploaded_file.filename
     _, ext = os.path.splitext(filename)
 
-    # Create temporary file with proper extension
-    fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=ext)
+    # Create temporary file with proper extension in secure temp directory
+    # tempfile.mkstemp() prevents path traversal by design
+    fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=ext)  # nosec B108
 
     try:
         # Save uploaded file to temporary location
         with os.fdopen(fd, 'wb') as tmp_file:
             uploaded_file.save(tmp_file)
 
+        # Validate the path is in temp directory (defense in depth)
+        temp_dir = tempfile.gettempdir()
+        canonical_temp = os.path.realpath(temp_path)
+        canonical_temp_dir = os.path.realpath(temp_dir)
+        if not canonical_temp.startswith(canonical_temp_dir):
+            os.unlink(temp_path)
+            raise ValueError("Temp file path validation failed")
+
         # Use shared application logger
         logger = get_logger()
         logger.info("Saved uploaded file '%s' (%s bytes) to %s", filename, uploaded_file.content_length, temp_path)
-        return temp_path
+        return temp_path  # nosec B108 - validated temp path
 
     except Exception as e:
         # Clean up on error
@@ -87,15 +100,20 @@ def _cleanup_temp_file(file_path: str) -> None:
 def _process_file_inputs(pattern_inputs: list, form_data: dict, files: dict) -> tuple[dict, list]:
     """Process file inputs by mapping uploaded files to temporary paths.
 
+    Security: This function only accepts FileStorage objects (uploaded files) and saves
+    them to secure temporary locations using tempfile.mkstemp(). It does NOT accept
+    user-provided file paths. All returned paths are validated to be within the system
+    temp directory.
+
     Args:
         pattern_inputs: List of pattern input definitions
-        form_data: Form data from request
-        files: Files from request
+        form_data: Form data from request (non-file inputs only)
+        files: FileStorage objects from request (uploaded files)
 
     Returns:
         tuple: A tuple containing (processed_inputs_dict, temp_files_list)
-            - processed_inputs_dict: Processed inputs with file paths mapped to temporary files
-            - temp_files_list: List of temporary file paths created
+            - processed_inputs_dict: Processed inputs with validated temp file paths
+            - temp_files_list: List of validated temporary file paths created
 
     Raises:
         ValueError: If required files are missing or invalid
