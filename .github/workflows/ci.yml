@@ -123,13 +123,13 @@ jobs:
 
       - name: Run Unit Tests
         id: run-tests
-        timeout-minutes: 10
+        timeout-minutes: 3
         shell: bash
         run: |
           set +e  # Disable exit on error to handle errors gracefully
 
           echo "## 🧪 Unit Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "⏱️ Timeout: 10 minutes (will fail if exceeded)" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ Timeout: 3 minutes (will fail if exceeded)" >> $GITHUB_STEP_SUMMARY
 
           # Change to project directory
           cd $GITHUB_WORKSPACE
@@ -141,11 +141,12 @@ jobs:
           echo "About to run: python tests/run_unit_tests.py"
           echo "Current directory: $(pwd)"
           echo "PYTHONPATH: $PYTHONPATH"
-          echo "Timeout: 10 minutes"
+          echo "Timeout: 3 minutes"
 
           # Run the unit tests using the project's test runner with timeout
-          timeout 600 python tests/run_unit_tests.py > test_output.log 2>&1
-          TEST_EXIT_CODE=$?
+          # Use stdbuf to force line buffering so we can see output in real-time
+          timeout 180 stdbuf -oL -eL python tests/run_unit_tests.py 2>&1 | tee test_output.log
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
 
           echo "Test runner exit code: $TEST_EXIT_CODE"
 
@@ -158,12 +159,12 @@ jobs:
           # Check for timeout (exit code 124 from timeout command)
           if [ $TEST_EXIT_CODE -eq 124 ]; then
             echo "### ⏱️ Test Execution Timeout!" >> $GITHUB_STEP_SUMMARY
-            echo "Tests exceeded the 10-minute timeout limit." >> $GITHUB_STEP_SUMMARY
+            echo "Tests exceeded the 3-minute timeout limit." >> $GITHUB_STEP_SUMMARY
             echo "This indicates a hanging test or performance issue." >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
             tail -100 test_output.log >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "::error::Unit tests timed out after 10 minutes!"
+            echo "::error::Unit tests timed out after 3 minutes!"
             echo "test-passed=false" >> $GITHUB_OUTPUT
             exit 1
           fi
