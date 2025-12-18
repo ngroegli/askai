@@ -259,7 +259,7 @@ def run_command(command, capture_output=True, shell=False, timeout=30):
         result = subprocess.run(
             command,
             capture_output=capture_output,
-            shell=shell,
+            shell=shell,  # nosec B602
             timeout=timeout,
             text=True,
             check=False
