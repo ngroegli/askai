@@ -49,13 +49,20 @@ def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") ->
     if not uploaded_file or not uploaded_file.filename:
         raise ValueError("Invalid file upload")
 
-    # Get file extension for proper handling
+    # Get file extension for proper handling and sanitize it
     filename = uploaded_file.filename
     _, ext = os.path.splitext(filename)
 
-    # Create temporary file with proper extension in secure temp directory
-    # tempfile.mkstemp() prevents path traversal by design
-    fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=ext)  # nosec B108
+    # Sanitize extension: only allow alphanumeric and common safe characters
+    # Remove any path separators or special characters that could be used for attacks
+    safe_ext = ''.join(c for c in ext if c.isalnum() or c in '.-_')
+    # Limit extension length to prevent abuse
+    safe_ext = safe_ext[:10] if safe_ext else ''
+
+    # Create temporary file with sanitized extension in secure temp directory
+    # tempfile.mkstemp() creates files in a secure temp directory
+    # The suffix is sanitized to prevent path traversal attacks
+    fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=safe_ext)  # nosec B108
 
     try:
         # Save uploaded file to temporary location
