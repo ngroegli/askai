@@ -27,7 +27,7 @@ class TestQuestionProcessor(BaseUnitTest):
         """Test that the QuestionProcessor module can be imported."""
         try:
             # pylint: disable=import-outside-toplevel
-            import askai.core.questions.processor as processor_module
+            from askai.core.questions import processor as processor_module
 
             self.assert_not_none(
                 processor_module,

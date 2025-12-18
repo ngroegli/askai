@@ -465,10 +465,22 @@ class PatternManager:
         """
         # Search in priority order (private first, then built-in)
         for patterns_dir in self._get_pattern_directories():
-            file_path = os.path.join(patterns_dir, f"{pattern_id}.md")
-            if os.path.exists(file_path):
+            # Sanitize pattern_id to prevent path traversal
+            safe_pattern_id = os.path.basename(pattern_id).replace('..', '')
+            file_path = os.path.join(patterns_dir, f"{safe_pattern_id}.md")
+
+            # Resolve to canonical path and verify it's within allowed directory
+            try:
+                canonical_path = os.path.realpath(file_path)
+                canonical_dir = os.path.realpath(patterns_dir)
+                if not canonical_path.startswith(canonical_dir):
+                    continue  # Skip if path escapes the patterns directory
+            except (OSError, ValueError):
+                continue
+
+            if os.path.exists(canonical_path):  # nosec B108
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(canonical_path, 'r', encoding='utf-8') as f:  # nosec B108
                         content = f.read()
 
                     inputs, input_groups = self._parse_pattern_inputs(content)
@@ -491,7 +503,9 @@ class PatternManager:
                         'source': 'private' if is_private else 'built-in'
                     }
                 except Exception as e:
-                    logger.error("Error reading pattern file %s: %s", file_path, str(e))
+                    # Sanitize file_path for logging to prevent log injection
+                    safe_path = file_path.replace('\n', '\\n').replace('\r', '\\r')
+                    logger.error("Error reading pattern file %s: %s", safe_path, str(e))
                     continue
 
         return None

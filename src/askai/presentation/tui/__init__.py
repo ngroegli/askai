@@ -11,9 +11,9 @@ import sys
 
 import textual  # noqa: F401 # pylint: disable=unused-import # type: ignore[reportUnusedImport]
 
-TEXTUAL_AVAILABLE = True
-# Store reference to avoid unused import warning
-_TEXTUAL_MODULE = textual
+# Module-level constants for TUI availability
+TEXTUAL_AVAILABLE = True  # Used by other modules to check TUI support
+_TEXTUAL_MODULE = textual  # Keep reference to the module
 
 
 def is_tui_available() -> bool:
@@ -53,4 +53,5 @@ def get_tui_config() -> dict:
     }
 
 
-__all__ = ['is_tui_available', 'get_tui_config']
+# Export public API
+__all__ = ['TEXTUAL_AVAILABLE', 'is_tui_available', 'get_tui_config']

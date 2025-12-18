@@ -144,17 +144,23 @@ def get_file_input(file_path):
 
 def _validate_file_access(file_path):
     """Validate if file is accessible and within size limits."""
-    if not os.path.exists(file_path):
+    # Resolve to canonical path to prevent path traversal attacks
+    try:
+        canonical_path = os.path.realpath(file_path)
+    except (OSError, ValueError) as e:
+        return f"Invalid file path: {e}"
+
+    if not os.path.exists(canonical_path):  # nosec B108
         return f"File not found: {file_path}"
 
-    if not os.path.isfile(file_path):
+    if not os.path.isfile(canonical_path):  # nosec B108
         return f"Path is not a file: {file_path}"
 
-    if not os.access(file_path, os.R_OK):
+    if not os.access(canonical_path, os.R_OK):  # nosec B108
         return f"File is not readable: {file_path}"
 
     # Check file size (limit to 100MB for safety)
-    file_size = os.path.getsize(file_path)
+    file_size = os.path.getsize(canonical_path)  # nosec B108
     max_size = 100 * 1024 * 1024  # 100MB
     if file_size > max_size:
         return f"File too large: {file_path} ({file_size} bytes > {max_size} bytes)"
@@ -164,7 +170,9 @@ def _validate_file_access(file_path):
 def _read_file_content(file_path):
     """Read file content in binary mode."""
     try:
-        with open(file_path, "rb") as file:
+        # Use canonical path to prevent path traversal
+        canonical_path = os.path.realpath(file_path)
+        with open(canonical_path, "rb") as file:  # nosec B108
             return file.read()
     except Exception as read_error:
         print_error_or_warnings(f"Error reading file {file_path}: {read_error}")

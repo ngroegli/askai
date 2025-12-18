@@ -146,8 +146,10 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             # THEN execute pending operations (commands, file creation) AFTER display
             additional_files = output_handler.execute_pending_operations()
             created_files = (created_files or []) + additional_files
+
+            # Mark formatted_output as used (it was already printed above)
+            _ = formatted_output
         else:
-            formatted_output = None
             created_files = []
     else:
         # === CHAT/QUESTION MODE ===

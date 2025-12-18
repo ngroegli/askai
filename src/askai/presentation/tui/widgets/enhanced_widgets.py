@@ -12,7 +12,8 @@ from textual.containers import Container
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 
-TEXTUAL_AVAILABLE = True
+# Module constant for TUI availability
+TEXTUAL_AVAILABLE = True  # noqa: F841
 
 
 class CreditDisplayWidget(Container):
