@@ -86,6 +86,8 @@ class PatternProcessor:
         response = self._normalize_response(response)
 
         # Process pattern output
+        # Note: Pattern formatting is determined by the pattern's output type (text vs markdown),
+        # NOT by CLI flags like --format or --plain-md
         formatted_output, created_files = self.pattern_manager.process_pattern_response(
             resolved_pattern_id,
             response,

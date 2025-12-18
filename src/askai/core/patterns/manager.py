@@ -825,12 +825,18 @@ class PatternManager:
                 print("Please enter a valid number or 'q' to quit")
 
     def process_pattern_response(
-        self, pattern_id: str, response: Union[str, Dict], output_handler
+        self,
+        pattern_id: str,
+        response: Union[str, Dict],
+        output_handler
     ) -> Tuple[str, List[str]]:
         """Process a response for a specific pattern.
 
         This method handles pattern-specific processing of AI responses,
         delegating the actual output handling to output_handler.
+
+        Pattern output formatting is determined by the pattern's output type
+        (text vs markdown), NOT by CLI flags.
 
         Args:
             pattern_id: ID of the pattern

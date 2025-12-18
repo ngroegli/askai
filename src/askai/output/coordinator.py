@@ -9,7 +9,7 @@ import json
 import os
 from typing import Optional, Dict, List, Tuple, Any, Union
 
-from askai.core.patterns.outputs import PatternOutput, OutputAction
+from askai.core.patterns.outputs import PatternOutput, OutputAction, OutputType
 from .formatters.terminal import TerminalFormatter
 from .formatters.markdown import MarkdownFormatter
 from .writers.chain import FileWriterChain
@@ -98,7 +98,9 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
                     pattern_contents = self.pattern_processor.extract_pattern_contents(response, pattern_outputs)
 
                     # Process outputs in definition order for display and command storage
-                    formatted_output = self._process_pattern_outputs_in_order(pattern_contents, pattern_outputs)
+                    formatted_output = self._process_pattern_outputs_in_order(
+                        pattern_contents, pattern_outputs, output_config
+                    )
 
                     # Store file creation info for later (after display is shown)
                     self._store_file_creation_info(pattern_contents, pattern_outputs)
@@ -156,7 +158,14 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
         if console_output:
             format_type = output_config.get('format', 'rawtext') if output_config else 'rawtext'
             if format_type == 'md':
-                formatted_output = self.formatters['markdown'].format(normalized_response)
+                # Check if plain_md flag is set (defaults to False for rendering)
+                plain_md = output_config.get('plain_md', False) if output_config else False
+                if plain_md:
+                    # User wants plain markdown without rendering
+                    formatted_output = self.formatters['markdown'].format(normalized_response)
+                else:
+                    # Render markdown with colors and formatting using TerminalFormatter
+                    formatted_output = self.formatters['console'].format(normalized_response, content_type='markdown')
             else:
                 formatted_output = self.formatters['console'].format(normalized_response)
         else:
@@ -304,11 +313,43 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
             return "\n".join(formatted_parts)
         return "No content found for any pattern outputs"
 
-    def _process_pattern_outputs_in_order(self, pattern_contents: Dict[str, str], pattern_outputs: List) -> str:
+    def _format_display_content(
+            self,
+            content: str,
+            output_type: OutputType
+    ) -> str:
+        """Format display content based on pattern output type.
+
+        For patterns, the output type determines formatting:
+        - type: markdown → Render with colors (TerminalFormatter)
+        - type: text → Plain text, no formatting
+
+        Args:
+            content: The content to format
+            output_type: The type of output from pattern definition
+
+        Returns:
+            Formatted content string
+        """
+        # For markdown type, render with colors and formatting
+        if output_type == OutputType.MARKDOWN:
+            return self.formatters['console'].format(content, content_type='markdown')
+
+        # For all other types (text, code, etc.), return as-is
+        return content
+
+    def _process_pattern_outputs_in_order(
+            self,
+            pattern_contents: Dict[str, str],
+            pattern_outputs: List,
+            output_config: Optional[Dict[str, Any]] = None  # pylint: disable=unused-argument
+    ) -> str:
         """Process pattern outputs in their exact definition order.
 
         This method:
-        - Collects DISPLAY outputs and formats them for immediate display
+        - Collects DISPLAY outputs and formats them based on pattern output type
+        - If output type is 'markdown', renders with colors (TerminalFormatter)
+        - If output type is 'text', displays as plain text
         - Stores EXECUTE outputs in pending_commands for execution after display
         - Preserves the exact order from pattern definition
 
@@ -318,6 +359,7 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
         Args:
             pattern_contents: Dict mapping output names to extracted content
             pattern_outputs: List of pattern output definitions in their definition order
+            output_config: Optional output configuration (unused for patterns - pattern type determines formatting)
 
         Returns:
             Formatted string containing display outputs
@@ -342,8 +384,11 @@ class OutputCoordinator:  # pylint: disable=too-many-instance-attributes
                 content = pattern_contents[output.name]
 
                 if output.action == OutputAction.DISPLAY:
+                    # Format the content based on pattern output type
+                    # If type is 'markdown', render it. If type is 'text', keep as plain text
+                    formatted_content = self._format_display_content(content, output.output_type)
                     # Add to formatted output for immediate display
-                    formatted_parts.append(f"{output.name.upper()}:\n{content}\n")
+                    formatted_parts.append(f"{output.name.upper()}:\n{formatted_content}\n")
 
                 elif output.action == OutputAction.EXECUTE:
                     # Store command with its position for later execution
