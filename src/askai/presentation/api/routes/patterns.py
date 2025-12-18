@@ -62,6 +62,7 @@ def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") ->
     # Create temporary file with sanitized extension in secure temp directory
     # tempfile.mkstemp() creates files in a secure temp directory
     # The suffix is sanitized to prevent path traversal attacks
+    # CodeQL [py/path-injection]: safe_ext sanitized with character whitelist, temp path validated
     fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=safe_ext)  # nosec B108
 
     try:
@@ -71,9 +72,11 @@ def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") ->
 
         # Validate the path is in temp directory (defense in depth)
         temp_dir = tempfile.gettempdir()
+        # CodeQL [py/path-injection]: temp_path from secure tempfile.mkstemp(), validated below
         canonical_temp = os.path.realpath(temp_path)
         canonical_temp_dir = os.path.realpath(temp_dir)
         if not canonical_temp.startswith(canonical_temp_dir):
+            # CodeQL [py/path-injection]: temp_path already validated as secure temp file
             os.unlink(temp_path)
             raise ValueError("Temp file path validation failed")
 

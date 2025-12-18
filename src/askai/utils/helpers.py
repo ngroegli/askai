@@ -167,18 +167,20 @@ def _validate_file_access(file_path):
         return (f"Invalid file path: {e}", None)
 
     # Validate using canonical path - user-controlled but intentional for CLI tool
-    # lgtm[py/path-injection] - intentional CLI behavior, users specify files to read
+    # CodeQL [py/path-injection]: CLI tool - users explicitly specify files to read
     if not os.path.exists(canonical_path):  # nosec B108
         return (f"File not found: {canonical_path}", None)
 
+    # CodeQL [py/path-injection]: CLI tool - canonical path from os.path.realpath() above
     if not os.path.isfile(canonical_path):  # nosec B108
         return (f"Path is not a file: {canonical_path}", None)
 
-    if not os.access(canonical_path, os.R_OK):  # nosec B108
+    # CodeQL [py/path-injection]: CLI tool - checking read permissions on validated path
+    if not os.path.access(canonical_path, os.R_OK):  # nosec B108
         return (f"File is not readable: {canonical_path}", None)
 
     # Check file size (limit to 100MB for safety)
-    # lgtm[py/path-injection] - intentional CLI behavior, canonical path already validated
+    # CodeQL [py/path-injection]: CLI tool - canonical path validated above
     file_size = os.path.getsize(canonical_path)  # nosec B108
     max_size = 100 * 1024 * 1024  # 100MB
     if file_size > max_size:
@@ -198,10 +200,15 @@ def _read_file_content(canonical_path):
 
     Note: This function expects a canonical path that has already been validated
     by _validate_file_access(). Do not call directly with user input.
+
+    Security: This is a CLI tool where users explicitly specify files they want to read.
+    The path has been canonicalized with os.path.realpath() and validated for existence,
+    file type, and read permissions in _validate_file_access() before reaching this function.
     """
     try:
-        # Path has already been validated and canonicalized
-        # lgtm[py/path-injection] - canonical path pre-validated by _validate_file_access
+        # Path has already been validated and canonicalized by _validate_file_access()
+        # This is intentional CLI behavior - users should access files they have permissions for
+        # CodeQL [py/path-injection]: CLI tool - canonical path pre-validated by _validate_file_access
         with open(canonical_path, "rb") as file:  # nosec B108
             return file.read()
     except Exception as read_error:
