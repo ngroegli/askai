@@ -129,14 +129,14 @@ def get_file_input(file_path):
         bytes: The file content as bytes, or None if error
     """
     try:
-        # Validate file accessibility
-        validation_error = _validate_file_access(file_path)
+        # Validate file accessibility and get canonical path
+        validation_error, canonical_path = _validate_file_access(file_path)
         if validation_error:
             print_error_or_warnings(validation_error)
             return None
 
-        # Read the file content
-        return _read_file_content(file_path)
+        # Read the file content using validated canonical path
+        return _read_file_content(canonical_path)
 
     except Exception as e:
         print_error_or_warnings(f"Error accessing file {file_path}: {e}")
@@ -149,44 +149,53 @@ def _validate_file_access(file_path):
     This function validates user-provided file paths for CLI operations.
     Path traversal protection: resolves to canonical path to prevent directory traversal.
     The CLI intentionally allows users to access any readable file on their system.
+
+    Returns:
+        tuple: (error_message, canonical_path) - error_message is None if validation passes,
+               canonical_path is the resolved path to use for file operations
     """
     # Resolve to canonical path to prevent path traversal attacks
     try:
         canonical_path = os.path.realpath(file_path)  # nosec B108
     except (OSError, ValueError) as e:
-        return f"Invalid file path: {e}"
+        return (f"Invalid file path: {e}", None)
 
     if not os.path.exists(canonical_path):  # nosec B108
-        return f"File not found: {file_path}"
+        return (f"File not found: {file_path}", None)
 
     if not os.path.isfile(canonical_path):  # nosec B108
-        return f"Path is not a file: {file_path}"
+        return (f"Path is not a file: {file_path}", None)
 
     if not os.access(canonical_path, os.R_OK):  # nosec B108
-        return f"File is not readable: {file_path}"
+        return (f"File is not readable: {file_path}", None)
 
     # Check file size (limit to 100MB for safety)
     file_size = os.path.getsize(canonical_path)  # nosec B108
     max_size = 100 * 1024 * 1024  # 100MB
     if file_size > max_size:
-        return f"File too large: {file_path} ({file_size} bytes > {max_size} bytes)"
+        return (f"File too large: {file_path} ({file_size} bytes > {max_size} bytes)", None)
 
-    return None
+    return (None, canonical_path)
 
-def _read_file_content(file_path):
+def _read_file_content(canonical_path):
     """
-    Read file content in binary mode.
+    Read file content in binary mode from a validated canonical path.
 
-    Uses canonical path resolution for security. This is a CLI tool that
-    intentionally allows users to read files they have access to.
+    Args:
+        canonical_path (str): Already validated canonical path from _validate_file_access()
+
+    Returns:
+        bytes: File content or None on error
+
+    Note: This function expects a canonical path that has already been validated
+    by _validate_file_access(). Do not call directly with user input.
     """
     try:
-        # Use canonical path to prevent path traversal
-        canonical_path = os.path.realpath(file_path)  # nosec B108
+        # Path has already been validated and canonicalized
         with open(canonical_path, "rb") as file:  # nosec B108
             return file.read()
     except Exception as read_error:
-        print_error_or_warnings(f"Error reading file {file_path}: {read_error}")
+        print_error_or_warnings(f"Error reading file {canonical_path}: {read_error}")
         return None
 
 
