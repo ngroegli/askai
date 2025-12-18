@@ -3,10 +3,7 @@
 import os
 from typing import Dict, Any, Optional
 
-import textual
-
-# Module constant for TUI availability checks
-TEXTUAL_AVAILABLE = True  # noqa: F841
+import textual  # noqa: F401
 
 
 def get_terminal_size() -> tuple[int, int]:

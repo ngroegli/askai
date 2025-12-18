@@ -13,7 +13,6 @@ import textual  # noqa: F401 # pylint: disable=unused-import # type: ignore[repo
 
 # Module-level constants for TUI availability
 TEXTUAL_AVAILABLE = True  # Used by other modules to check TUI support
-_TEXTUAL_MODULE = textual  # Keep reference to the module
 
 
 def is_tui_available() -> bool:

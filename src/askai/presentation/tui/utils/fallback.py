@@ -6,9 +6,6 @@ import os
 import sys
 from typing import Optional
 
-# Textual is always available - this constant is used by external modules
-TEXTUAL_AVAILABLE = True  # noqa: F841
-
 
 def check_tui_environment() -> dict:
     """

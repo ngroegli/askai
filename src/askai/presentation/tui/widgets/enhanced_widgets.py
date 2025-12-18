@@ -12,9 +12,6 @@ from textual.containers import Container
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 
-# Module constant for TUI availability
-TEXTUAL_AVAILABLE = True  # noqa: F841
-
 
 class CreditDisplayWidget(Container):
     """Widget for displaying OpenRouter credit information."""

@@ -10,9 +10,6 @@ from textual.widgets import Static, ProgressBar, TextArea, Button, Header, Foote
 from textual.screen import ModalScreen, Screen
 from textual import work
 
-# Module constant indicating textual is available (used for runtime checks)
-TEXTUAL_AVAILABLE = True  # noqa: F841
-
 
 class LoadingScreen(ModalScreen):
     """Modal loading screen with animated progress and status messages."""

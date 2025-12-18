@@ -14,8 +14,12 @@ sys.path.insert(0, os.path.join(project_root, "tests"))
 
 # pylint: disable=wrong-import-position,import-error
 from unit.test_base import BaseUnitTest
-from askai.utils.config import ASKAI_DIR, CONFIG_PATH, load_config
 import askai.utils.config as shared_config
+
+# Import specific items for convenience
+ASKAI_DIR = shared_config.ASKAI_DIR
+CONFIG_PATH = shared_config.CONFIG_PATH
+load_config = shared_config.load_config
 
 
 class TestConfigConstants(BaseUnitTest):
