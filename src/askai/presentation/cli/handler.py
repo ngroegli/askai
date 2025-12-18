@@ -38,6 +38,10 @@ class CommandHandler:
         if not getattr(args, 'interactive', False):
             return False
 
+        # Skip interactive mode during testing
+        if os.environ.get('ASKAI_TESTING', '').lower() in ('true', '1', 'yes'):
+            return False
+
         try:
             self.logger.info(json.dumps({"log_message": "Launching interactive TUI mode"}))
 
