@@ -1,14 +1,16 @@
-# CodeQL Configuration for askai-cli
+# CodeQL Security Analysis for askai-cli
 
 ## Overview
 
-This directory contains CodeQL configuration files for security analysis of the askai-cli project.
+This directory contains documentation about CodeQL security analysis for the askai-cli project.
 
-## Path Injection Suppressions
+## Expected CodeQL Warnings (False Positives)
 
-The `codeql-config.yml` file suppresses path injection warnings (`py/path-injection`) for two specific files. These are **intentional false positives** for a CLI application.
+CodeQL reports 7 path injection warnings (`py/path-injection`). These are **expected false positives** for a CLI application.
 
-### Why These Are False Positives
+**📄 See [FALSE_POSITIVES.md](./FALSE_POSITIVES.md) for detailed documentation.**
+
+### Quick Summary - Why These Are False Positives
 
 #### 1. `src/askai/utils/helpers.py`
 

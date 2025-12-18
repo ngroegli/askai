@@ -176,7 +176,7 @@ def _validate_file_access(file_path):
         return (f"Path is not a file: {canonical_path}", None)
 
     # CodeQL [py/path-injection]: CLI tool - checking read permissions on validated path
-    if not os.path.access(canonical_path, os.R_OK):  # nosec B108
+    if not os.access(canonical_path, os.R_OK):  # nosec B108
         return (f"File is not readable: {canonical_path}", None)
 
     # Check file size (limit to 100MB for safety)
