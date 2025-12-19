@@ -31,7 +31,6 @@ class TestTUIFallback(unittest.TestCase):
         os.environ.clear()
         os.environ.update(self.original_env)
 
-    @patch('askai.presentation.tui.utils.fallback.TEXTUAL_AVAILABLE', False)
     @patch('askai.presentation.tui.utils.fallback.os.isatty')
     @patch('askai.presentation.tui.utils.fallback.sys.stdout')
     @patch.dict(os.environ, {'TERM': 'xterm-256color'}, clear=False)
