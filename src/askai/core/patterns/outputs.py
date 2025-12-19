@@ -1,5 +1,5 @@
 """
-Pattern outputs module for the askai-cli.
+Pattern outputs module for Ask AI.
 
 This module defines the structure and behavior of outputs from AI pattern executions.
 It provides classes and utilities to handle different types of outputs (text, JSON, code, etc.),

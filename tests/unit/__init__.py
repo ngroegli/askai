@@ -1,3 +1,3 @@
 """
-Unit tests for the AskAI CLI application.
+Unit tests for the Ask AI application.
 """

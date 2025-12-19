@@ -1,5 +1,5 @@
 """
-Pattern input definitions module for the askai-cli.
+Pattern input definitions module for Ask AI.
 
 This module provides the data structures and validation logic for handling
 different types of inputs in pattern definitions, including text, numbers,

@@ -1,5 +1,5 @@
 """
-Integration tests for image URL handling in askai-cli.
+Integration tests for image URL handling in askai.
 """
 from tests.integration.test_base import AutomatedTest
 from tests.integration.test_utils import run_cli_command, verify_output_contains, verify_basic_json_format

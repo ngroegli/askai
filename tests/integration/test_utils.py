@@ -1,5 +1,5 @@
 """
-Utilities for integration testing of askai-cli.
+Utilities for integration testing of askai.
 """
 import os
 import subprocess

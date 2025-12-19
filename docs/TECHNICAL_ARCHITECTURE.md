@@ -1,4 +1,4 @@
-# AskAI CLI - Technical Architecture Guide
+# Ask AI - Technical Architecture Guide
 
 ## Table of Contents
 1. [Code Organization](#code-organization)
@@ -14,7 +14,7 @@
 
 ### Project Root Structure
 ```
-askai-cli/
+askai/
 ├── src/askai/                 # Main application code (Layered Architecture)
 │   ├── __init__.py
 │   ├── __main__.py            # Module entry point
@@ -697,8 +697,8 @@ Application (main.py)
 # Authentication
 headers = {
     "Authorization": f"Bearer {api_key}",
-    "HTTP-Referer": "https://github.com/ngroegli/askai-cli",
-    "X-Title": "AskAI CLI"
+    "HTTP-Referer": "https://github.com/ngroegli/askai",
+    "X-Title": "Ask AI"
 }
 
 # Chat Completions Endpoint
@@ -964,8 +964,8 @@ ASKAI_TESTING=true
 #### Direct Installation
 ```bash
 # Clone repository
-git clone https://github.com/ngroegli/askai-cli.git
-cd askai-cli
+git clone https://github.com/ngroegli/askai.git
+cd askai
 
 # Install dependencies
 pip install -r requirements.txt
@@ -980,10 +980,10 @@ chmod +x askai.sh
 #### Package Installation (Future)
 ```bash
 # PyPI installation (planned)
-pip install askai-cli
+pip install askai
 
 # Conda installation (planned)
-conda install -c conda-forge askai-cli
+conda install -c conda-forge askai
 ```
 
 ### Runtime Dependencies
@@ -1032,4 +1032,4 @@ OPENROUTER_API_KEY=your_api_key
 ASKAI_LOG_LEVEL=DEBUG|INFO|WARNING|ERROR
 ```
 
-This technical architecture guide provides the detailed implementation structure needed for development, maintenance, and extension of the AskAI CLI system.
+This technical architecture guide provides the detailed implementation structure needed for development, maintenance, and extension of the Ask AI system.

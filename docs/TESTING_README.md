@@ -1,7 +1,7 @@
 ````markdown
-# Integration Tests for askai-cli
+# Integration Tests for Ask AI
 
-This directory contains integration tests for the askai command-line interface.
+This directory contains integration tests for the askai application.
 
 ## Test Structure
 
@@ -107,7 +107,7 @@ from tests.integration.test_base import AutomatedTest
 from tests.integration.test_utils import run_cli_command, verify_output_contains
 
 class TestMyFeature(AutomatedTest):
-    """Test a specific feature of askai-cli."""
+    """Test a specific feature of askai."""
     
     def run(self):
         """Run the test cases."""

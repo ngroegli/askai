@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AskAI CLI Version
+# Ask AI Version
 VERSION="1.2.1"
 
 # Resolve the directory of the script, even if called via symlink

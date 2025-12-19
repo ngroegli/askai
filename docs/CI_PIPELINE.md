@@ -2,7 +2,7 @@
 
 ## Overview
 
-The askai-cli project uses GitHub Actions for Continuous Integration (CI), security scanning, code quality analysis, and automated releases. The comprehensive pipeline ensures code quality, security, and reliable deployment processes.
+The Ask AI project uses GitHub Actions for Continuous Integration (CI), security scanning, code quality analysis, and automated releases. The comprehensive pipeline ensures code quality, security, and reliable deployment processes.
 
 ## Workflows Overview
 
@@ -301,8 +301,8 @@ pip list
 
 The README includes CI status badges showing current build status:
 
-- [![CI Status](https://github.com/ngroegli/askai-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/ngroegli/askai-cli/actions/workflows/ci.yml) - Main CI pipeline
-- [![Code Quality](https://github.com/ngroegli/askai-cli/actions/workflows/pylint.yml/badge.svg)](https://github.com/ngroegli/askai-cli/actions/workflows/pylint.yml) - Code quality analysis
+- [![CI Status](https://github.com/ngroegli/askai/actions/workflows/ci.yml/badge.svg)](https://github.com/ngroegli/askai/actions/workflows/ci.yml) - Main CI pipeline
+- [![Code Quality](https://github.com/ngroegli/askai/actions/workflows/pylint.yml/badge.svg)](https://github.com/ngroegli/askai/actions/workflows/pylint.yml) - Code quality analysis
 
 ## Best Practices
 

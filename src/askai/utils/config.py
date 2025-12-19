@@ -1,5 +1,5 @@
 """
-Configuration module for AskAI CLI application.
+Configuration module for Ask AI application.
 Handles loading of user configuration from YAML files.
 Supports proper ~/.askai directory structure with initialization and setup wizard.
 """

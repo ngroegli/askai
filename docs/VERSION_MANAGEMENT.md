@@ -1,6 +1,6 @@
 # Version Management System
 
-This document describes the centralized version management system for AskAI CLI.
+This document describes the centralized version management system for Ask AI.
 
 ## Overview
 
@@ -138,7 +138,7 @@ The version bumping script automatically updates:
 The `--version` flag is integrated into the main CLI parser:
 ```bash
 python -m askai.main --version
-# Output: AskAI CLI 0.1.0
+# Output: Ask AI 0.1.0
 ```
 
 ### Package Integration

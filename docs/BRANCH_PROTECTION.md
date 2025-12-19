@@ -1,4 +1,4 @@
-# Branch Protection Guide for askai-cli
+# Branch Protection Guide for Ask AI
 
 ## Branch Strategy
 

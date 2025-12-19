@@ -1,5 +1,5 @@
 """
-Integration tests for image handling in askai-cli.
+Integration tests for image handling in askai.
 """
 import os
 from tests.integration.test_base import AutomatedTest

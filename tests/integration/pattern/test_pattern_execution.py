@@ -1,5 +1,5 @@
 """
-Dynamic integration tests for all patterns in askai-cli.
+Dynamic integration tests for all patterns in askai.
 """
 import os
 import json

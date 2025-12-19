@@ -1,5 +1,5 @@
 """
-Pattern manager module for the askai-cli.
+Pattern manager module for Ask AI.
 
 This module handles the loading, parsing, and processing of pattern files,
 which define input requirements, output formats, and execution configurations

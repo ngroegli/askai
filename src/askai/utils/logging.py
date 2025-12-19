@@ -1,5 +1,5 @@
 """
-Logger module for AskAI CLI application.
+Logger module for Ask AI application.
 
 Configures application-wide logging with JSON formatting,
 log rotation, and configurable log levels.

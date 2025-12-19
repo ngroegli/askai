@@ -1,5 +1,5 @@
 """
-AI service package for AskAI CLI.
+AI service package for Ask AI.
 
 This package provides AI model integration services and client implementations
 for various AI providers, currently focusing on OpenRouter.

@@ -1,13 +1,13 @@
-# AskAI CLI 🤖
+# Ask AI 🤖
 
-[![CI Status](https://github.com/ngroegli/askai-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/ngroegli/askai-cli/actions/workflows/ci.yml)
-[![Code Quality](https://github.com/ngroegli/askai-cli/actions/workflows/pylint.yml/badge.svg)](https://github.com/ngroegli/askai-cli/actions/workflows/pylint.yml)
+[![CI Status](https://github.com/ngroegli/askai/actions/workflows/ci.yml/badge.svg)](https://github.com/ngroegli/askai/actions/workflows/ci.yml)
+[![Code Quality](https://github.com/ngroegli/askai/actions/workflows/pylint.yml/badge.svg)](https://github.com/ngroegli/askai/actions/workflows/pylint.yml)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-> **⚡ Not just another ChatGPT CLI** — AskAI gives you the **flexibility of quick AI questions** AND the **power of structured workflow patterns**. Use it like ChatGPT for fast answers, or leverage reusable patterns for production workflows.
+> **⚡ Not just another ChatGPT wrapper** — Ask AI gives you the **flexibility of quick AI questions** AND the **power of structured workflow patterns**. Use it like ChatGPT for fast answers, or leverage reusable patterns for production workflows.
 
-**AskAI CLI** is a versatile command-line AI assistant that adapts to your needs:
+**Ask AI** is a versatile AI assistant that adapts to your needs:
 
 - 🚀 **Quick & Flexible**: Ask questions, analyze files, pipe command output — zero setup required
 - 🎯 **Structured Workflows**: Create reusable patterns for consistent, production-ready automation
@@ -122,8 +122,8 @@ The installer handles:
 
 
 ```bash
-git clone https://github.com/ngroegli/askai-cli
-cd askai-cli
+git clone https://github.com/ngroegli/askai
+cd askai
 chmod +x install.sh
 ./install.sh
 ```
@@ -152,8 +152,8 @@ source ~/.zshrc   # or ~/.bashrc
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/ngroegli/askai-cli
-cd askai-cli
+git clone https://github.com/ngroegli/askai
+cd askai
 ```
 
 2. Create and activate a virtual environment:
@@ -419,8 +419,8 @@ AskAI follows a modern layered architecture:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ngroegli/askai-cli
-cd askai-cli
+git clone https://github.com/ngroegli/askai
+cd askai
 
 # Create virtual environment
 python3 -m venv venv
@@ -517,8 +517,8 @@ Contributions are welcome! Please see:
 ## 🌟 Support & Community
 
 - 📖 **Documentation**: Browse the [docs/](docs/) folder
-- 🐛 **Issues**: Report bugs on [GitHub Issues](https://github.com/ngroegli/askai-cli/issues)
-- 💬 **Discussions**: Join [GitHub Discussions](https://github.com/ngroegli/askai-cli/discussions)
+- 🐛 **Issues**: Report bugs on [GitHub Issues](https://github.com/ngroegli/askai/issues)
+- 💬 **Discussions**: Join [GitHub Discussions](https://github.com/ngroegli/askai/discussions)
 
 ---
 

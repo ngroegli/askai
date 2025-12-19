@@ -11,7 +11,7 @@ When dismissing the 7 CodeQL path injection warnings, use this template comment:
 ```
 This is a false positive for a CLI tool context.
 
-Context: askai-cli is a command-line interface where users explicitly specify file paths they want to access. Path traversal to user-specified files is the intended functionality, not a vulnerability.
+Context: askai is a tool where users explicitly specify file paths they want to access. Path traversal to user-specified files is the intended functionality, not a vulnerability.
 
 Security measures in place:
 - Path canonicalization with os.path.realpath() prevents symlink attacks

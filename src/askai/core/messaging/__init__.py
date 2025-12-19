@@ -1,5 +1,5 @@
 """
-Message building and formatting module for the AskAI CLI.
+Message building and formatting module for Ask AI.
 Handles message construction and template processing.
 """
 

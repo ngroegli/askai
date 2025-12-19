@@ -1,5 +1,5 @@
 """
-General utility functions for the AskAI CLI application.
+General utility functions for the Ask AI application.
 Contains core util handling, command execution, and formatting.
 """
 

@@ -115,7 +115,7 @@ Once running:
 
 ## 🔧 Configuration
 
-The API uses the same configuration as the AskAI CLI:
+The API uses the same configuration as Ask AI:
 - Configuration file: `~/.askai/config.yml`
 - Environment variables for Flask settings
 - Docker volume mounting for config access

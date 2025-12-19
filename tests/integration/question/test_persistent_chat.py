@@ -149,7 +149,7 @@ class TestPersistentChat(AutomatedTest):
         test_name = "new_persistent_chat_pdf"
 
         # Check if test PDF exists
-        test_pdf = "/home/nicola/Git/askai-cli/tests/test_resources/test.pdf"
+        test_pdf = "/home/nicola/Git/askai/tests/test_resources/test.pdf"
         if not os.path.exists(test_pdf):
             # Try alternative location
             test_pdf = "tests/test_resources/sample.pdf"

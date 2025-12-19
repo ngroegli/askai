@@ -16,7 +16,7 @@ These are **FALSE POSITIVES** - not actual security vulnerabilities.
 
 ## Summary
 
-CodeQL reports 7 "Uncontrolled data used in path expression" warnings. These are **false positives** because askai-cli is a command-line interface tool where users intentionally specify file paths they want to access.
+CodeQL reports 7 "Uncontrolled data used in path expression" warnings. These are **false positives** because askai is a tool where users intentionally specify file paths they want to access.
 
 ## Why These Are Safe
 

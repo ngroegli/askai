@@ -1,5 +1,5 @@
 """
-Main entry point for the AskAI CLI application.
+Main entry point for the Ask AI application.
 Orchestrates the different components to provide AI assistance via command line.
 """
 
@@ -37,7 +37,7 @@ def display_help_fast():
     cli_parser.parse_arguments()  # This will display help and exit
 
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-    """Main entry point for the AskAI CLI application."""
+    """Main entry point for the Ask AI application."""
     # Check if this is a help request (before any heavy initialization)
     # Use most efficient path for help commands
     if '-h' in sys.argv or '--help' in sys.argv:
