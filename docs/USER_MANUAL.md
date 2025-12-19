@@ -22,13 +22,13 @@ After installation, configure your API key and preferred models in `~/.askai_con
 
 ## 2. Configuration
 
-- Configuration is managed via a YAML file (`~/.askai_config.yml`).
+- Configuration is managed via a YAML file (`~/.askai/config.yml`).
 - You can run the setup wizard for interactive configuration.
 - The application uses a modern layered architecture with clean separation of concerns:
-  - **Shared layer**: Configuration, logging, and utilities
-  - **Modules layer**: Core business logic (AI services, patterns, chat, questions)
-  - **Presentation layer**: CLI interface and user interaction
-  - **Infrastructure layer**: Output processing and file operations
+  - **Utils Layer**: Configuration, logging, and utilities (`src/askai/utils/`)
+  - **Core Layer**: Business logic (AI services, patterns, chat, questions, messaging) (`src/askai/core/`)
+  - **Presentation Layer**: CLI/TUI interface and REST API (`src/askai/presentation/`)
+  - **Output Layer**: Response processing and file operations (`src/askai/output/`)
 - See `docs/SOFTWARE_ARCHITECTURE.md` for detailed architecture information.
 
 ## 3. Command-Line Options

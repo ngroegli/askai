@@ -12,7 +12,7 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, "src"))
 
 # pylint: disable=wrong-import-position
-from askai.shared.config.loader import load_config, CONFIG_PATH, ASKAI_DIR
+from askai.utils.config import load_config, CONFIG_PATH, ASKAI_DIR
 
 # Create namespace
 config_ns = Namespace('config', description='Configuration management operations')
@@ -146,7 +146,7 @@ class ConfigurationStatus(Resource):
                     suggestions.append("Set a default AI model")
 
             return {
-                'configured': configured and len(issues) == 0,
+                'configured': configured and not issues,
                 'config_file_exists': config_file_exists,
                 'config_path': CONFIG_PATH,
                 'askai_dir_exists': askai_dir_exists,
@@ -223,7 +223,7 @@ class ConfigurationValidation(Resource):
                 warnings.append("Invalid logging level - should be DEBUG, INFO, WARNING, or ERROR")
 
             return {
-                'valid': len(issues) == 0,
+                'valid': not issues,
                 'issues': issues,
                 'warnings': warnings,
                 'suggestions': suggestions

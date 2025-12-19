@@ -3,21 +3,16 @@ Chat Browser Tab Component.
 Handles chat browsing, viewing, and management.
 """
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
+
+from textual.widgets import Static, Button, ListView, ListItem, Label
+from textual.containers import Vertical, Horizontal
+from textual.message import Message
+
 from .base_tab import BaseTabComponent
 
-from ..common import (
-    Static, Button, ListView, ListItem, Label,
-    Vertical, Horizontal, Message, StatusMixin
-)
 
-if TYPE_CHECKING:
-    from textual.widgets import Static, Button, ListView, ListItem, Label
-    from textual.containers import Vertical, Horizontal
-    from textual.message import Message
-
-
-class ChatTab(BaseTabComponent, StatusMixin):
+class ChatTab(BaseTabComponent):
     """Chat Browser tab component."""
 
     class ChatSelected(Message):

@@ -11,9 +11,10 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, "src"))
 
-from askai.modules.questions.processor import QuestionProcessor
-from askai.shared.config.loader import load_config
-from askai.shared.logging.setup import setup_logger
+# pylint: disable=wrong-import-position
+from askai.core.questions.processor import QuestionProcessor
+from askai.utils.config import load_config
+from askai.utils.logging import setup_logger
 
 # Create namespace
 questions_ns = Namespace('questions', description='Question processing operations')
@@ -26,7 +27,9 @@ question_request = questions_ns.model('QuestionRequest', {
     'response_format': fields.String(description='Response format', enum=['rawtext', 'json', 'md'], default='rawtext'),
     'model': fields.String(description='AI model to use (optional)'),
     'pattern_id': fields.String(description='Pattern ID to use (optional)'),
-    'persistent_chat': fields.String(description='Chat ID for persistent conversation (optional, use "new" for new chat)')
+    'persistent_chat': fields.String(
+        description='Chat ID for persistent conversation (optional, use "new" for new chat)'
+    )
 })
 
 # Response models
@@ -51,7 +54,6 @@ class AskQuestion(Resource):
 
     @questions_ns.doc('ask_question')
     @questions_ns.expect(question_request)
-    @questions_ns.marshal_with(question_response)
     def post(self):
         """Process a question and return AI response.
 
@@ -75,11 +77,11 @@ class AskQuestion(Resource):
             logger = setup_logger(config)
 
             # Create question processor
-            base_path = os.path.join(project_root)
+            base_path = "/app"  # Use the app root directory in container
             processor = QuestionProcessor(config, logger, base_path)
 
             # Create mock args object for compatibility
-            class MockArgs:
+            class MockArgs:  # pylint: disable=missing-class-docstring,too-few-public-methods,too-many-instance-attributes
                 def __init__(self, data):
                     self.question = data.get('question')
                     self.file_input = data.get('file_input')
@@ -176,7 +178,7 @@ class ValidateQuestion(Resource):
                 errors.append(f"Invalid response format. Must be one of: {', '.join(valid_formats)}")
 
             # Return validation results
-            is_valid = len(errors) == 0
+            is_valid = not errors
 
             return {
                 'valid': is_valid,

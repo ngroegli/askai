@@ -11,18 +11,19 @@ from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 
 # Add project paths for imports
+# From src/askai/presentation/api/routes/patterns.py, go up 5 levels to project root
 project_root = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", ".."
+    os.path.dirname(__file__), "..", "..", "..", "..", ".."
 ))
 sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, "src"))
 
 # pylint: disable=wrong-import-position
-from askai.modules.ai.ai_service import AIService
-from askai.modules.messaging.builder import MessageBuilder
-from askai.modules.patterns.pattern_manager import PatternManager
-from askai.shared.config.loader import load_config
-from askai.shared.logging import get_logger
+from askai.core.ai import AIService
+from askai.core.messaging import MessageBuilder
+from askai.core.patterns import PatternManager
+from askai.utils import load_config
+from askai.utils import get_logger
 
 # Create namespace
 patterns_ns = Namespace('patterns', description='Pattern management operations')
@@ -31,12 +32,16 @@ patterns_ns = Namespace('patterns', description='Pattern management operations')
 def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") -> str:
     """Save an uploaded file to a temporary location and return the path.
 
+    Security: This function uses tempfile.mkstemp() which creates files in a secure
+    temporary directory. The returned path is guaranteed to be within the system's
+    temp directory and not accessible via path traversal.
+
     Args:
         uploaded_file: Flask FileStorage object from file upload
         prefix: Prefix for the temporary filename
 
     Returns:
-        str: Path to the saved temporary file
+        str: Path to the saved temporary file (within secure temp directory)
 
     Raises:
         ValueError: If file is invalid or cannot be saved
@@ -44,22 +49,41 @@ def _save_uploaded_file(uploaded_file: FileStorage, prefix: str = "uploaded") ->
     if not uploaded_file or not uploaded_file.filename:
         raise ValueError("Invalid file upload")
 
-    # Get file extension for proper handling
+    # Get file extension for proper handling and sanitize it
     filename = uploaded_file.filename
     _, ext = os.path.splitext(filename)
 
-    # Create temporary file with proper extension
-    fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=ext)
+    # Sanitize extension: only allow alphanumeric and common safe characters
+    # Remove any path separators or special characters that could be used for attacks
+    safe_ext = ''.join(c for c in ext if c.isalnum() or c in '.-_')
+    # Limit extension length to prevent abuse
+    safe_ext = safe_ext[:10] if safe_ext else ''
+
+    # Create temporary file with sanitized extension in secure temp directory
+    # tempfile.mkstemp() creates files in a secure temp directory
+    # The suffix is sanitized to prevent path traversal attacks
+    # CodeQL [py/path-injection]: safe_ext sanitized with character whitelist, temp path validated
+    fd, temp_path = tempfile.mkstemp(prefix=f"{prefix}_", suffix=safe_ext)  # nosec B108
 
     try:
         # Save uploaded file to temporary location
         with os.fdopen(fd, 'wb') as tmp_file:
             uploaded_file.save(tmp_file)
 
+        # Validate the path is in temp directory (defense in depth)
+        temp_dir = tempfile.gettempdir()
+        # CodeQL [py/path-injection]: temp_path from secure tempfile.mkstemp(), validated below
+        canonical_temp = os.path.realpath(temp_path)
+        canonical_temp_dir = os.path.realpath(temp_dir)
+        if not canonical_temp.startswith(canonical_temp_dir):
+            # CodeQL [py/path-injection]: temp_path already validated as secure temp file
+            os.unlink(temp_path)
+            raise ValueError("Temp file path validation failed")
+
         # Use shared application logger
         logger = get_logger()
         logger.info("Saved uploaded file '%s' (%s bytes) to %s", filename, uploaded_file.content_length, temp_path)
-        return temp_path
+        return temp_path  # nosec B108 - validated temp path
 
     except Exception as e:
         # Clean up on error
@@ -86,15 +110,20 @@ def _cleanup_temp_file(file_path: str) -> None:
 def _process_file_inputs(pattern_inputs: list, form_data: dict, files: dict) -> tuple[dict, list]:
     """Process file inputs by mapping uploaded files to temporary paths.
 
+    Security: This function only accepts FileStorage objects (uploaded files) and saves
+    them to secure temporary locations using tempfile.mkstemp(). It does NOT accept
+    user-provided file paths. All returned paths are validated to be within the system
+    temp directory.
+
     Args:
         pattern_inputs: List of pattern input definitions
-        form_data: Form data from request
-        files: Files from request
+        form_data: Form data from request (non-file inputs only)
+        files: FileStorage objects from request (uploaded files)
 
     Returns:
         tuple: A tuple containing (processed_inputs_dict, temp_files_list)
-            - processed_inputs_dict: Processed inputs with file paths mapped to temporary files
-            - temp_files_list: List of temporary file paths created
+            - processed_inputs_dict: Processed inputs with validated temp file paths
+            - temp_files_list: List of validated temporary file paths created
 
     Raises:
         ValueError: If required files are missing or invalid
@@ -195,9 +224,65 @@ pattern_template = patterns_ns.model('PatternTemplate', {
 class PatternsList(Resource):
     """List available patterns."""
 
+    @staticmethod
+    def _convert_input_to_dict(input_obj):
+        """Convert PatternInput object to dictionary."""
+        if hasattr(input_obj, 'name'):  # It's a PatternInput object
+            try:
+                input_type_value = (
+                    input_obj.input_type.value
+                    if hasattr(input_obj, 'input_type') and hasattr(input_obj.input_type, 'value')
+                    else str(getattr(input_obj, 'input_type', 'text'))
+                )
+                return {
+                    'name': input_obj.name,
+                    'description': getattr(input_obj, 'description', ''),
+                    'type': input_type_value,
+                    'required': getattr(input_obj, 'required', True),
+                    'default': getattr(input_obj, 'default', None),
+                    'options': getattr(input_obj, 'options', None),
+                    'min_value': getattr(input_obj, 'min_value', None),
+                    'max_value': getattr(input_obj, 'max_value', None),
+                    'group': getattr(input_obj, 'group', None)
+                }
+            except Exception as e:
+                current_app.logger.error(f"Error converting input object: {e}, obj={input_obj}")
+                raise
+        return input_obj  # Already a dictionary
+
+    @staticmethod
+    def _convert_output_to_dict(output_obj):
+        """Convert PatternOutput object to dictionary."""
+        if hasattr(output_obj, 'name'):  # It's a PatternOutput object
+            try:
+                output_type_value = (
+                    output_obj.output_type.value
+                    if hasattr(output_obj, 'output_type') and hasattr(output_obj.output_type, 'value')
+                    else str(getattr(output_obj, 'output_type', 'text'))
+                )
+                action_value = (
+                    output_obj.action.value
+                    if hasattr(output_obj, 'action') and hasattr(output_obj.action, 'value')
+                    else str(getattr(output_obj, 'action', 'display'))
+                )
+                return {
+                    'name': output_obj.name,
+                    'description': getattr(output_obj, 'description', ''),
+                    'type': output_type_value,
+                    'required': getattr(output_obj, 'required', True),
+                    'example': getattr(output_obj, 'example', None),
+                    'action': action_value,
+                    'write_to_file': getattr(output_obj, 'write_to_file', None),
+                    'group': getattr(output_obj, 'group', None)
+                }
+            except Exception as e:
+                current_app.logger.error(f"Error converting output object: {e}, obj={output_obj}")
+                raise
+        return output_obj  # Already a dictionary
+
     @patterns_ns.doc('list_patterns')
     @patterns_ns.marshal_with(patterns_list)
-    def get(self):
+    def get(self):  # pylint: disable=too-many-nested-blocks,too-many-locals
         """Get list of all available patterns.
 
         Returns a list of all patterns available in the system.
@@ -223,62 +308,25 @@ class PatternsList(Resource):
 
                     if pattern_content:
                         # Convert PatternInput objects to dictionaries for JSON serialization
-                        inputs = []
-                        for input_obj in pattern_content.get('inputs', []):
-                            if hasattr(input_obj, 'name'):  # It's a PatternInput object
-                                input_type_value = (
-                                    input_obj.input_type.value
-                                    if hasattr(input_obj.input_type, 'value')
-                                    else str(input_obj.input_type)
-                                )
-                                input_dict = {
-                                    'name': input_obj.name,
-                                    'description': input_obj.description,
-                                    'type': input_type_value,
-                                    'required': input_obj.required,
-                                    'default': input_obj.default,
-                                    'options': input_obj.options,
-                                    'min_value': input_obj.min_value,
-                                    'max_value': input_obj.max_value,
-                                    'group': input_obj.group
-                                }
-                                inputs.append(input_dict)
-                            else:  # It's already a dictionary
-                                inputs.append(input_obj)
+                        inputs = [self._convert_input_to_dict(inp) for inp in pattern_content.get('inputs', [])]
 
                         # Convert PatternOutput objects to dictionaries for JSON serialization
-                        outputs = []
-                        for output_obj in pattern_content.get('outputs', []):
-                            if hasattr(output_obj, 'name'):  # It's a PatternOutput object
-                                output_type_value = (
-                                    output_obj.output_type.value
-                                    if hasattr(output_obj.output_type, 'value')
-                                    else str(output_obj.output_type)
-                                )
-                                action_value = (
-                                    output_obj.action.value
-                                    if hasattr(output_obj.action, 'value')
-                                    else str(output_obj.action)
-                                )
-                                output_dict = {
-                                    'name': output_obj.name,
-                                    'description': output_obj.description,
-                                    'type': output_type_value,
-                                    'required': output_obj.required,
-                                    'example': output_obj.example,
-                                    'action': action_value,
-                                    'write_to_file': output_obj.write_to_file,
-                                    'group': output_obj.group
-                                }
-                                outputs.append(output_dict)
-                            else:  # It's already a dictionary
-                                outputs.append(output_obj)
+                        outputs = [self._convert_output_to_dict(out) for out in pattern_content.get('outputs', [])]
+
+                        # Extract description from pattern configuration (Purpose section)
+                        description = ''
+                        if pattern_content.get('configuration'):
+                            config_obj = pattern_content['configuration']
+                            if hasattr(config_obj, 'purpose') and config_obj.purpose:
+                                description = (config_obj.purpose.content
+                                             if hasattr(config_obj.purpose, 'content')
+                                             else str(config_obj.purpose))
 
                         patterns.append({
                             'id': pattern_id,
                             'name': pattern_data.get('name', pattern_id),
-                            'description': pattern_data.get('description', ''),
-                            'category': pattern_data.get('category', 'general'),
+                            'description': description,
+                            'category': 'general',  # Could be extracted from file path or metadata
                             'inputs': inputs,
                             'outputs': outputs
                         })
@@ -442,7 +490,7 @@ class PatternExecution(Resource):
     @patterns_ns.doc('execute_pattern')
     @patterns_ns.expect(pattern_execution_request, validate=True)
     @patterns_ns.marshal_with(pattern_execution_response)
-    def post(self):
+    def post(self):  # pylint: disable=too-many-return-statements,too-many-locals
         """Execute a pattern with provided input values (text/numbers only).
 
         This endpoint handles patterns that don't require file inputs.
@@ -517,7 +565,8 @@ class PatternExecution(Resource):
 
             # Execute pattern
             result = self._execute_pattern(
-                pattern_manager, pattern_id, validated_inputs, debug_mode, model_name
+                pattern_manager, pattern_id, inputs,
+                debug_mode=debug_mode, model_name=model_name
             )
             return result
 
@@ -532,7 +581,7 @@ class PatternExecution(Resource):
                 'pattern_id': data.get('pattern_id', 'unknown') if 'data' in locals() else 'unknown'
             }, 500
 
-    def _execute_pattern(self, pattern_manager, pattern_id, inputs, debug_mode, model_name):
+    def _execute_pattern(self, pattern_manager, pattern_id, inputs, *, debug_mode, model_name):
         """Common pattern execution logic."""
         logger = get_logger()
         logger.info("Executing pattern '%s'", pattern_id)
@@ -605,7 +654,7 @@ class PatternFileExecution(Resource):
     @patterns_ns.doc('execute_pattern_with_files')
     @patterns_ns.expect(pattern_file_execution_request, validate=False)
     @patterns_ns.marshal_with(pattern_execution_response)
-    def post(self):
+    def post(self):  # pylint: disable=too-many-return-statements,too-many-locals,too-many-branches,too-many-statements
         """Execute a pattern with file uploads.
 
         Use multipart/form-data with:
@@ -818,9 +867,63 @@ class PatternFileExecution(Resource):
 class PatternTemplate(Resource):
     """Get JSON template for pattern inputs."""
 
+    @staticmethod
+    def _generate_template_value(input_obj):
+        """Generate template value for an input based on its type and properties."""
+        # Use default value if available
+        if input_obj.default is not None:
+            return input_obj.default
+
+        # Use first option if available
+        if input_obj.options:
+            return input_obj.options[0]
+
+        # Generate example based on type
+        input_type = (
+            input_obj.input_type.value
+            if hasattr(input_obj.input_type, 'value')
+            else str(input_obj.input_type)
+        )
+
+        if input_type == 'text':
+            return (
+                f"<{input_obj.description}>"
+                if input_obj.description
+                else "<text_value>"
+            )
+        if input_type == 'file':
+            return {
+                "_note": "For API execution, upload this as a file in multipart/form-data request",
+                "_example": "Use the field name as the file upload parameter"
+            }
+        if input_type == 'image_file':
+            return {
+                "_note": "For API execution, upload image file in multipart/form-data request",
+                "_supported_formats": ["jpg", "jpeg", "png", "gif", "webp"],
+                "_example": "Use the field name as the file upload parameter"
+            }
+        if input_type == 'pdf_file':
+            return {
+                "_note": "For API execution, upload PDF file in multipart/form-data request",
+                "_supported_formats": ["pdf"],
+                "_example": "Use the field name as the file upload parameter"
+            }
+        if input_type == 'number':
+            if input_obj.min_value is not None:
+                return input_obj.min_value
+            return 0
+        if input_type == 'boolean':
+            return input_obj.required
+        if input_type == 'select':
+            return "<select_value>"
+        if input_type == 'url':
+            return "https://example.com"
+
+        return f"<{input_type}_value>"
+
     @patterns_ns.doc('get_pattern_template')
     @patterns_ns.marshal_with(pattern_template)
-    def get(self, pattern_id):
+    def get(self, pattern_id):  # pylint: disable=too-many-nested-blocks,too-many-branches
         """Get a JSON template with default/example values for pattern inputs.
 
         Returns a template that can be used as a starting point for
@@ -850,54 +953,7 @@ class PatternTemplate(Resource):
             for input_obj in inputs:
                 if hasattr(input_obj, 'name'):  # It's a PatternInput object
                     input_name = input_obj.name
-
-                    # Use default value if available
-                    if input_obj.default is not None:
-                        template[input_name] = input_obj.default
-                    # Use first option if available
-                    elif input_obj.options:
-                        template[input_name] = input_obj.options[0]
-                    # Generate example based on type
-                    else:
-                        input_type = (
-                            input_obj.input_type.value
-                            if hasattr(input_obj.input_type, 'value')
-                            else str(input_obj.input_type)
-                        )
-
-                        if input_type == 'text':
-                            template[input_name] = (
-                                f"<{input_obj.description}>"
-                                if input_obj.description
-                                else "<text_value>"
-                            )
-                        elif input_type == 'file':
-                            template[input_name] = {
-                                "_note": "For API execution, upload this as a file in multipart/form-data request",
-                                "_example": "Use the field name as the file upload parameter"
-                            }
-                        elif input_type == 'image_file':
-                            template[input_name] = {
-                                "_note": "For API execution, upload image file in multipart/form-data request",
-                                "_supported_formats": ["jpg", "jpeg", "png", "gif", "webp"],
-                                "_example": "Use the field name as the file upload parameter"
-                            }
-                        elif input_type == 'pdf_file':
-                            template[input_name] = {
-                                "_note": "For API execution, upload PDF file in multipart/form-data request",
-                                "_supported_formats": ["pdf"],
-                                "_example": "Use the field name as the file upload parameter"
-                            }
-                        elif input_type == 'number':
-                            if input_obj.min_value is not None:
-                                template[input_name] = input_obj.min_value
-                            else:
-                                template[input_name] = 0
-                        elif input_type == 'boolean':
-                            template[input_name] = input_obj.required
-                        else:
-                            template[input_name] = f"<{input_type}_value>"
-
+                    template[input_name] = self._generate_template_value(input_obj)
                 else:  # It's already a dictionary (backwards compatibility)
                     input_name = input_obj.get('name', 'unknown')
                     template[input_name] = input_obj.get(

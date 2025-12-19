@@ -55,29 +55,36 @@ The system follows a layered architecture pattern with clear separation of conce
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                       │
-│               (CLI Interface & REST API)                   │
+│              (CLI, TUI & REST API)                         │
+│                  src/askai/presentation/                    │
 ├─────────────────────────────────────────────────────────────┤
-│                    Application Layer                        │
-│              (Business Logic & Orchestration)              │
+│                       Core Layer                            │
+│       (Business Logic: AI, Patterns, Chat, Messaging)      │
+│                    src/askai/core/                          │
 ├─────────────────────────────────────────────────────────────┤
-│                     Service Layer                          │
-│          (AI Services, Pattern Management, I/O)            │
+│                      Output Layer                           │
+│        (Response Processing & File Operations)             │
+│                   src/askai/output/                         │
 ├─────────────────────────────────────────────────────────────┤
-│                  Infrastructure Layer                      │
-│         (Configuration, Logging, File System)              │
+│                      Utils Layer                            │
+│          (Configuration, Logging, Helpers)                 │
+│                    src/askai/utils/                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### Layer Responsibilities
 
-**Presentation Layer**: Command-line argument parsing, user interaction, help display, REST API endpoints, Swagger documentation
-**Application Layer**: Main orchestration logic, workflow coordination, component initialization
-**Service Layer**: AI communication, pattern processing, output handling, chat management
-**Infrastructure Layer**: Configuration loading, logging, file I/O, system integration
+**Presentation Layer** (`src/askai/presentation/`): CLI/TUI argument parsing, user interaction, REST API endpoints, Swagger documentation
+
+**Core Layer** (`src/askai/core/`): AI communication, pattern processing, question handling, chat management, message building
+
+**Output Layer** (`src/askai/output/`): Response processing, content extraction, file writers, display formatters
+
+**Utils Layer** (`src/askai/utils/`): Configuration loading, logging infrastructure, file I/O helpers, shared utilities
 
 ## Core Components
 
-### 1. Main Application (`askai.py`)
+### 1. Main Application (`src/askai/main.py`)
 **Purpose**: Application entry point and orchestration hub
 **Responsibilities**:
 - Initialize and coordinate all components
@@ -85,11 +92,11 @@ The system follows a layered architecture pattern with clear separation of conce
 - Manage application lifecycle
 - Integrate pattern and chat processing flows
 
-### 2. Shared Infrastructure Package (`shared/`)
+### 2. Utilities Package (`src/askai/utils/`)
 **Components**:
-- `config/loader.py`: Configuration management and setup wizard
-- `logging/setup.py`: Logging infrastructure and formatting
-- `utils/helpers.py`: File operations, encoding, and utilities
+- `config.py`: Configuration management and setup wizard
+- `logging.py`: Logging infrastructure and formatting
+- `helpers.py`: File operations, encoding, and utilities
 
 **Responsibilities**:
 - Provide common infrastructure services
@@ -97,24 +104,33 @@ The system follows a layered architecture pattern with clear separation of conce
 - Supply shared utilities for file operations and formatting
 - Support application-wide constants and settings
 
-### 3. Presentation Layer Package (`presentation/cli/`)
+### 3. Presentation Layer Package (`src/askai/presentation/`)
 **Components**:
-- `CLIParser`: Argument parsing and validation
-- `CommandHandler`: Command execution routing
-- `BannerArgumentParser`: Enhanced help display
+- **CLI Package** (`cli/`):
+  - `CLIParser`: Argument parsing and validation
+  - `CommandHandler`: Command execution routing
+  - `BannerArgumentParser`: Enhanced help display
+- **API Package** (`api/`):
+  - `Flask Application`: REST API application factory
+  - Routes: Questions, Patterns, Health, Config, OpenRouter
+  - Schemas: Request/Response validation
+- **TUI Package** (`tui/`):
+  - Terminal User Interface components
+  - Interactive pattern execution
 
 **Responsibilities**:
 - Parse and validate command-line arguments
 - Route commands to appropriate handlers
-- Provide comprehensive help and documentation
-- Handle user interaction and interface presentation
+- Provide REST API with Swagger documentation
+- Offer interactive terminal user interface
+- Handle user interaction through multiple interfaces
 
-### 4. Core Modules Package (`modules/`)
+### 4. Core Business Logic Package (`src/askai/core/`)
 
-#### AI Service Module (`modules/ai/`)
+#### AI Service Module (`src/askai/core/ai/`)
 **Components**:
-- `AIService`: High-level AI interaction coordinator
-- `OpenRouterClient`: API client for OpenRouter service
+- `service.py`: AIService - High-level AI interaction coordinator
+- `openrouter.py`: OpenRouterClient - API client for OpenRouter service
 
 **Responsibilities**:
 - Manage AI model configuration and selection
@@ -122,12 +138,12 @@ The system follows a layered architecture pattern with clear separation of conce
 - Support multimodal inputs (text, images, PDFs)
 - Implement web search capabilities
 
-#### Pattern Management Module (`modules/patterns/`)
+#### Pattern Management Module (`src/askai/core/patterns/`)
 **Components**:
-- `PatternManager`: Pattern lifecycle management
-- `PatternInput`: Input definition and validation
-- `PatternOutput`: Output specification and behavior
-- `PatternConfiguration`: Model and execution settings
+- `manager.py`: PatternManager - Pattern lifecycle management
+- `inputs.py`: PatternInput - Input definition and validation
+- `outputs.py`: PatternOutput - Output specification and behavior
+- `configuration.py`: PatternConfiguration - Model and execution settings
 
 **Responsibilities**:
 - Load and parse pattern definitions
@@ -135,9 +151,9 @@ The system follows a layered architecture pattern with clear separation of conce
 - Define output behaviors and file generation
 - Support both built-in and private patterns
 
-#### Question Processing Module (`modules/questions/`) - NEW
+#### Question Processing Module (`src/askai/core/questions/`)
 **Components**:
-- `QuestionProcessor`: Standalone question processing logic
+- `processor.py`: QuestionProcessor - Standalone question processing logic
 - `models.py`: Question data models and structures
 
 **Responsibilities**:
@@ -146,18 +162,18 @@ The system follows a layered architecture pattern with clear separation of conce
 - Provide clean separation between pattern and question workflows
 - Support various input formats for questions
 
-#### Chat Management Module (`modules/chat/`)
+#### Chat Management Module (`src/askai/core/chat/`)
 **Components**:
-- `ChatManager`: Chat session lifecycle management
+- `manager.py`: ChatManager - Chat session lifecycle management
 
 **Responsibilities**:
 - Maintain persistent conversation history
 - Support chat context loading and storage
 - Provide chat file management utilities
 
-#### Messaging Module (`modules/messaging/`)
+#### Messaging Module (`src/askai/core/messaging/`)
 **Components**:
-- `MessageBuilder`: Construct AI conversation messages
+- `builder.py`: MessageBuilder - Construct AI conversation messages
 
 **Responsibilities**:
 - Build message structures for different input types
@@ -165,23 +181,23 @@ The system follows a layered architecture pattern with clear separation of conce
 - Apply pattern templates and format instructions
 - Support URL and file content integration
 
-### 5. Infrastructure Layer Package (`infrastructure/output/`)
+### 5. Output Layer Package (`src/askai/output/`)
 **Components**:
-- `OutputCoordinator`: Main facade coordinating all output operations
+- `coordinator.py`: OutputCoordinator - Main facade coordinating all output operations
 - **Processors Package** (`processors/`): Specialized content processing
-  - `ContentExtractor`: Extract and validate content from AI responses
-  - `PatternProcessor`: Handle pattern-specific output generation
-  - `ResponseNormalizer`: Clean and normalize response content
-  - `DirectoryManager`: Manage output directory operations
-- **Display Formatters Package** (`display_formatters/`): Content presentation
-  - `TerminalFormatter`: CLI output with colors and syntax highlighting
-  - `MarkdownFormatter`: Markdown file formatting with proper syntax
-  - `BaseDisplayFormatter`: Abstract base for all display formatters
-- **File Writers Package** (`file_writers/`): Chain of Responsibility for file operations
-  - `FileWriterChain`: Orchestrates file writing through specialized writers
-  - `HTMLWriter`, `CSSWriter`, `JavaScriptWriter`: Web content writers
-  - `MarkdownWriter`, `JSONWriter`, `TextWriter`: Document writers
-  - `BaseFileWriter`: Abstract base for all file writers
+  - `content.py`: ContentExtractor - Extract and validate content from AI responses
+  - `pattern.py`: PatternProcessor - Handle pattern-specific output generation
+  - `normalizer.py`: ResponseNormalizer - Clean and normalize response content
+  - `directory.py`: DirectoryManager - Manage output directory operations
+- **Display Formatters Package** (`formatters/`): Content presentation
+  - `terminal.py`: TerminalFormatter - CLI output with colors and syntax highlighting
+  - `markdown.py`: MarkdownFormatter - Markdown file formatting with proper syntax
+  - `base.py`: BaseDisplayFormatter - Abstract base for all display formatters
+- **File Writers Package** (`writers/`): Chain of Responsibility for file operations
+  - `chain.py`: FileWriterChain - Orchestrates file writing through specialized writers
+  - `html.py`, `css.py`, `javascript.py`: Web content writers
+  - `markdown.py`, `json.py`, `text.py`: Document writers
+  - `base.py`: BaseFileWriter - Abstract base for all file writers
 
 **Responsibilities**:
 - **OutputCoordinator**: Unified entry point for all output operations
@@ -201,77 +217,77 @@ The system follows a layered architecture pattern with clear separation of conce
 
 ### Pattern-Based Processing Flow
 ```
-User Input → CLI Parser (presentation/cli) → Pattern Selection (modules/patterns) →
-Input Collection → Message Building (modules/messaging) → AI Service (modules/ai) →
-OpenRouter API → Response Processing → Output Handler (infrastructure/output) →
+User Input → CLI Parser (presentation/cli) → Pattern Selection (core/patterns) →
+Input Collection → Message Building (core/messaging) → AI Service (core/ai) →
+OpenRouter API → Response Processing → Output Handler (output/) →
 Pattern Output Processing → File Generation/Display
 ```
 
-### Question-Based Processing Flow (NEW)
+### Question-Based Processing Flow
 ```
-User Input → CLI Parser (presentation/cli) → Question Processing (modules/questions) →
-Message Building (modules/messaging) → AI Service (modules/ai) → OpenRouter API →
-Response Processing → Output Handler (infrastructure/output) → Standard Formatting → Display
+User Input → CLI Parser (presentation/cli) → Question Processing (core/questions) →
+Message Building (core/messaging) → AI Service (core/ai) → OpenRouter API →
+Response Processing → Output Handler (output/) → Standard Formatting → Display
 ```
 
-### API-Based Processing Flow (NEW)
+### API-Based Processing Flow
 ```
-HTTP Request → Flask Routes (presentation/api) → Question/Pattern Processing (modules) →
-Message Building (modules/messaging) → AI Service (modules/ai) → OpenRouter API →
-Response Processing → Output Handler (infrastructure/output) → JSON Response → HTTP Client
+HTTP Request → Flask Routes (presentation/api) → Question/Pattern Processing (core/) →
+Message Building (core/messaging) → AI Service (core/ai) → OpenRouter API →
+Response Processing → Output Handler (output/) → JSON Response → HTTP Client
 ```
 
 ### Chat-Based Processing Flow
 ```
-User Input → CLI Parser (presentation/cli) → Chat Session Setup (modules/chat) →
-Context Loading → Message Building (modules/messaging) → AI Service (modules/ai) →
-OpenRouter API → Response Processing → Output Handler (infrastructure/output) →
+User Input → CLI Parser (presentation/cli) → Chat Session Setup (core/chat) →
+Context Loading → Message Building (core/messaging) → AI Service (core/ai) →
+OpenRouter API → Response Processing → Output Handler (output/) →
 Standard Formatting → Chat History Storage
 ```
 
 ### Configuration Flow
 ```
-Startup → Directory Check (shared/utils) → Config File Check (shared/config) →
+Startup → Directory Check (utils/) → Config File Check (utils/config) →
 Setup Wizard (if needed) → Configuration Loading → Component Initialization
 ```
 
 ### Cross-Layer Communication
-- **Presentation Layer**: Receives user input, routes to appropriate modules
-- **Modules Layer**: Processes business logic, coordinates between AI services and patterns
-- **Infrastructure Layer**: Handles output processing, file operations, and external integrations
-- **Shared Layer**: Provides common services (config, logging, utilities) to all layers
+- **Presentation Layer**: Receives user input, routes to appropriate core modules
+- **Core Layer**: Processes business logic, coordinates between AI services and patterns
+- **Output Layer**: Handles output processing, file operations, and formatting
+- **Utils Layer**: Provides common services (config, logging, utilities) to all layers
 
 ## Module Dependencies
 
 ### Dependency Hierarchy
 ```
-askai.py (main)
-├── shared/
-│   ├── config/loader.py (Configuration management)
-│   ├── logging/setup.py (Logging infrastructure)
-│   └── utils/helpers.py (File operations, utilities)
-├── presentation/cli/
-│   ├── cli_parser.py (Argument parsing)
-│   ├── command_handler.py (Command routing)
-│   └── banner_argument_parser.py (Enhanced help)
-├── modules/
+src/askai/main.py (application entry point)
+├── utils/
+│   ├── config.py (Configuration management)
+│   ├── logging.py (Logging infrastructure)
+│   └── helpers.py (File operations, utilities)
+├── presentation/
+│   ├── cli/ (CLIParser, CommandHandler, BannerArgumentParser)
+│   ├── api/ (Flask app, routes, schemas)
+│   └── tui/ (Terminal UI components)
+├── core/
 │   ├── ai/ (AIService, OpenRouterClient)
 │   ├── patterns/ (PatternManager, PatternInput, PatternOutput, PatternConfiguration)
 │   ├── questions/ (QuestionProcessor, models)
 │   ├── chat/ (ChatManager)
 │   └── messaging/ (MessageBuilder)
-└── infrastructure/output/
-    ├── output_coordinator.py (Main facade)
+└── output/
+    ├── coordinator.py (Main facade)
     ├── processors/ (ContentExtractor, PatternProcessor, ResponseNormalizer, DirectoryManager)
-    ├── display_formatters/ (TerminalFormatter, MarkdownFormatter, BaseDisplayFormatter)
-    └── file_writers/ (FileWriterChain + specialized writers)
+    ├── formatters/ (TerminalFormatter, MarkdownFormatter, BaseDisplayFormatter)
+    └── writers/ (FileWriterChain + specialized writers)
 ```
 
 ### Layer Dependencies
-- **Presentation** → **Modules** → **Infrastructure**
-- **All Layers** → **Shared** (common infrastructure)
+- **Presentation** → **Core** → **Output**
+- **All Layers** → **Utils** (common infrastructure)
 - **Clear separation**: No circular dependencies
-- **Upward flow**: Presentation calls modules, modules call infrastructure
+- **Upward flow**: Presentation calls core, core calls output
 - **Shared services**: Configuration, logging, utilities available to all layers
 
 ### External Dependencies
@@ -332,7 +348,7 @@ Specialized Writers (HTML, CSS, JS, JSON, Markdown, Text)
 ### Core Components
 
 #### 1. FileWriterChain - The Coordinator
-**Location**: `python/output/file_writers/file_writer_chain.py`
+**Location**: `src/askai/output/writers/chain.py`
 
 The `FileWriterChain` acts as the main coordinator and entry point for all file writing operations:
 
@@ -352,7 +368,7 @@ class FileWriterChain:
 - **Backward compatibility**: Maintains `write_by_extension()` for existing code
 
 #### 2. BaseWriter - The Abstract Foundation
-**Location**: `python/output/file_writers/base_writer.py`
+**Location**: `src/askai/output/writers/base.py`
 
 All specialized writers inherit from `BaseWriter`, which implements the Chain of Responsibility pattern:
 
@@ -375,7 +391,7 @@ class BaseWriter:
 
 Each writer is focused on a single responsibility and optimized for specific content types:
 
-##### HTMLWriter (`html_writer.py`)
+##### HTMLWriter (`html.py`)
 - **Handles**: `.html`, `.htm` files
 - **Features**:
   - Document structure validation
@@ -383,7 +399,7 @@ Each writer is focused on a single responsibility and optimized for specific con
   - Reference injection for related files (CSS/JS)
   - Content cleaning and formatting
 
-##### CSSWriter (`css_writer.py`)
+##### CSSWriter (`css.py`)
 - **Handles**: `.css` files
 - **Features**:
   - Selector cleaning and validation
@@ -391,7 +407,7 @@ Each writer is focused on a single responsibility and optimized for specific con
   - CSS syntax formatting
   - Comment preservation
 
-##### JavaScriptWriter (`js_writer.py`)
+##### JavaScriptWriter (`javascript.py`)
 - **Handles**: `.js` files
 - **Features**:
   - Automatic `'use strict';` directive addition
@@ -399,7 +415,7 @@ Each writer is focused on a single responsibility and optimized for specific con
   - Function extraction and formatting
   - Code structure optimization
 
-##### JSONWriter (`json_writer.py`)
+##### JSONWriter (`json.py`)
 - **Handles**: `.json` files
 - **Features**:
   - JSON validation and formatting
@@ -407,7 +423,7 @@ Each writer is focused on a single responsibility and optimized for specific con
   - Error handling for malformed JSON
   - Structure validation
 
-##### MarkdownWriter (`markdown_writer.py`)
+##### MarkdownWriter (`markdown.py`)
 - **Handles**: `.md` files
 - **Features**:
   - Heading structure validation
@@ -415,7 +431,7 @@ Each writer is focused on a single responsibility and optimized for specific con
   - Link validation
   - Metadata preservation
 
-##### TextWriter (`text_writer.py`)
+##### TextWriter (`text.py`)
 - **Handles**: `.txt` files and **fallback for all other extensions**
 - **Features**:
   - Basic text cleaning
@@ -717,7 +733,7 @@ Deferred Execution Flow:
 ### Core Components
 
 #### 1. OutputCoordinator - Main Facade & Orchestrator
-**Location**: `python/output/output_coordinator.py`
+**Location**: `src/askai/output/coordinator.py`
 
 The `OutputCoordinator` serves as the unified entry point for all output operations and orchestrates the new deferred execution pattern:
 
@@ -736,7 +752,7 @@ The `OutputCoordinator` serves as the unified entry point for all output operati
 - Pattern content processing with proper ordering (explanation → execution → file creation)
 
 #### 2. Content Processors Package
-**Location**: `python/output/processors/`
+**Location**: `src/askai/output/processors/`
 
 ##### ContentExtractor (`content_extractor.py`) - Enhanced
 - **Enhanced JSON Parsing**: Handles both JSON strings and pre-parsed response structures
@@ -772,7 +788,7 @@ The `OutputCoordinator` serves as the unified entry point for all output operati
 - Ensures secure file system operations
 
 #### 3. Display Formatters Package
-**Location**: `python/output/display_formatters/`
+**Location**: `src/askai/output/formatters/`
 
 ##### TerminalFormatter (`terminal_formatter.py`)
 - Formats content for terminal/CLI display
@@ -909,7 +925,7 @@ logging:
 - Support custom input types and output formats
 
 ### 2. Output Formatters
-- Implement new formatters in `output/display_formatters/`
+- Implement new formatters in `output/formatters/`
 - Support custom display and file generation logic
 - Register new formats in OutputCoordinator
 

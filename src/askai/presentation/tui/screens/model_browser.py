@@ -1,13 +1,13 @@
 """Model browser screen for the TUI."""
 
 from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal, Container
-from textual.widgets import Header, Footer, Static, Input, ListView, ListItem, Label, RichLog
 from textual.binding import Binding
+from textual.containers import Vertical, Horizontal, Container
+from textual.widgets import Header, Footer, ListView, ListItem, Label, RichLog, Static, Input
 
-from askai.modules.ai.openrouter_client import OpenRouterClient
-from askai.presentation.tui.styles.styled_components import StyledButton, StyledStatic, StyledInput
+from askai.core.ai.openrouter import OpenRouterClient
 from askai.presentation.tui.screens.base_screen import BaseScreen
+from askai.presentation.tui.styles import StyledButton, StyledStatic, StyledInput
 
 
 class ModelBrowserScreen(BaseScreen):
@@ -352,6 +352,7 @@ class ModelBrowserScreen(BaseScreen):
                 await self.display_model_details()
 
     async def display_model_details(self) -> None:
+        # pylint: disable=too-many-branches
         """Display detailed information about the selected model."""
         if not self.selected_model:
             return

@@ -1,0 +1,6 @@
+# Auto-generated override to use local AskAI config and private patterns
+services:
+  askai-api:
+    volumes:
+      - ${HOME}/.askai/config.yml:/tmp/host-config.yml:ro
+      - /home/nicola/Git/askai-private-patterns/patterns:/app/private-patterns:ro

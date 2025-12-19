@@ -1,20 +1,20 @@
-# AskAI CLI - High-Level System Architecture (Layered Architecture with API)
+# AskAI CLI - High-Level System Architecture
 title: "AskAI CLI - System Overview"
 
 user: "User" {
   shape: person
-  style.fill: "#90CAF9" # Light Blue (core app, user)
+  style.fill: "#90CAF9" # Light Blue
 }
 
 web_client: "Web Client" {
   shape: rectangle
-  style.fill: "#FFB74D" # Light Orange (external client)
+  style.fill: "#FFB74D" # Light Orange
 }
 
 # Presentation Layer
 presentation: "Presentation Layer" {
   shape: rectangle
-  style.fill: "#F3E5F5" # Light Purple (CLI/API group)
+  style.fill: "#F3E5F5" # Light Purple
 
   cli_parser: "CLI Parser" { style.fill: "#CE93D8" }
   command_handler: "Command Handler" { style.fill: "#CE93D8" }
@@ -23,21 +23,23 @@ presentation: "Presentation Layer" {
   api_routes: "REST API Routes" { style.fill: "#BA68C8" }
   flask_app: "Flask Application" { style.fill: "#BA68C8" }
   swagger_docs: "Swagger Documentation" { style.fill: "#BA68C8" }
+
+  tui_components: "TUI Components" { style.fill: "#AB47BC" }
 }
 
 # Application Core
 app: "Application Core" {
   shape: rectangle
-  style.fill: "#E3F2FD" # Light Blue (core app group)
+  style.fill: "#E3F2FD" # Light Blue
 
-  orchestrator: "Main Orchestrator (askai.py)" { style.fill: "#90CAF9" }
+  orchestrator: "Main Orchestrator (main.py)" { style.fill: "#90CAF9" }
   workflow: "Workflow Coordinator" { style.fill: "#90CAF9" }
 }
 
-# Modules Layer (Core Business Logic)
-modules: "Modules Layer" {
+# Core Business Logic Layer
+core: "Core Business Logic" {
   shape: rectangle
-  style.fill: "#E8F5E9" # Light Green (business logic group)
+  style.fill: "#E8F5E9" # Light Green
 
   ai_module: "AI Services" { style.fill: "#A5D6A7" }
   patterns_module: "Pattern System" { style.fill: "#A5D6A7" }
@@ -46,30 +48,31 @@ modules: "Modules Layer" {
   messaging_module: "Message Building" { style.fill: "#A5D6A7" }
 }
 
-# Infrastructure Layer
-infrastructure: "Infrastructure Layer" {
+# Output Processing Layer
+output: "Output Processing" {
   shape: rectangle
-  style.fill: "#FFF9C4" # Light Yellow (infrastructure group)
+  style.fill: "#FFF9C4" # Light Yellow
 
-  output_infra: "Output Processing" { style.fill: "#FFF176" }
-  file_operations: "File Operations" { style.fill: "#FFF176" }
+  output_coordinator: "Output Coordinator" { style.fill: "#FFF176" }
+  file_operations: "File Writers" { style.fill: "#FFF176" }
   formatters: "Display Formatters" { style.fill: "#FFF176" }
+  processors: "Content Processors" { style.fill: "#FFF176" }
 }
 
-# Shared Layer
-shared: "Shared Layer" {
+# Utils Layer
+utils: "Utilities Layer" {
   shape: rectangle
-  style.fill: "#FAFAFA" # Light Gray (shared services group)
+  style.fill: "#FAFAFA" # Light Gray
 
   config: "Configuration" { style.fill: "#BDBDBD" }
   logging: "Logging" { style.fill: "#BDBDBD" }
-  utils: "Utilities" { style.fill: "#BDBDBD" }
+  helpers: "Helpers" { style.fill: "#BDBDBD" }
 }
 
 # External Services
 external: "External Services" {
   shape: rectangle
-  style.fill: "#FFF3E0" # Light Orange (AI integration group)
+  style.fill: "#FFF3E0" # Light Orange
 
   openrouter: "OpenRouter API" { style.fill: "#FFCC80" }
   ai_models: "AI Models" { style.fill: "#FFCC80" }
@@ -79,16 +82,16 @@ external: "External Services" {
 user -> presentation: "CLI Commands & Input"
 web_client -> presentation: "HTTP Requests"
 presentation -> app: "Parsed Arguments"
-app -> modules: "Business Logic Calls"
-modules -> infrastructure: "Output Processing"
-modules -> external: "API Requests"
-external -> modules: "AI Responses"
-infrastructure -> presentation: "Formatted Output"
+app -> core: "Business Logic Calls"
+core -> output: "Output Processing"
+core -> external: "API Requests"
+external -> core: "AI Responses"
+output -> presentation: "Formatted Output"
 presentation -> user: "CLI Results & Feedback"
 presentation -> web_client: "HTTP Responses"
 
-# Shared services connections (all layers use shared)
-presentation -> shared: "Common Services"
-app -> shared: "Common Services"
-modules -> shared: "Common Services"
-infrastructure -> shared: "Common Services"
+# Utils services connections (all layers use utils)
+presentation -> utils: "Common Services"
+app -> utils: "Common Services"
+core -> utils: "Common Services"
+output -> utils: "Common Services"

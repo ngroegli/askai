@@ -109,23 +109,4 @@ model:
   model_name: anthropic/claude-3.7-sonnet
   temperature: 0.7
   max_tokens: 4000
-
-format_instructions: |
-  When creating IT solution market analysis:
-
-  1. Generate a comprehensive analysis with these components:
-     - Product Overview: Key features, benefits, and potential drawbacks
-     - Competitor Analysis: Detailed comparison of competing solutions
-     - Market Trends: Current industry trends and future outlook
-     - Strategic Recommendations: Action items based on the analysis
-
-  2. For the competitor analysis, include:
-     - Structured data with detailed product comparison
-     - Feature-by-feature comparison in table format
-     - Pros and cons of each solution
-     - Pricing models and deployment options
-     - Verification dates for information sources
-
-  3. Format your analysis with clear headings, tables, and bullet points
-     to make the information easily digestible for decision-makers
 ```

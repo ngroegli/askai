@@ -18,7 +18,7 @@ patterns:
 
 # Web search configuration (global defaults)
 web_search:
-  enabled: false # Enable web search by default for all queries
+  enabled: false # Enable web search capabilities (configures defaults, doesn't auto-enable for all queries)
   method: "plugin" # "plugin" or "context" (for non-plugin search)
   max_results: 5 # Maximum number of search results
   context_size: "medium" # "low", "medium", "high" (for non-plugin search)

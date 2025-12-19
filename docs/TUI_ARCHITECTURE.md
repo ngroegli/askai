@@ -35,7 +35,7 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
 ### Application Layer (`apps/`)
 
 #### TabbedTUIApp
-**File**: `python/presentation/tui/apps/tabbed_tui_app.py`
+**File**: `src/askai/presentation/tui/apps/tabbed_tui_app.py`
 - **Purpose**: Central tabbed application coordinator
 - **Features**:
   - Five-tab interface (Question, Pattern, Chat, Model, Credits)
@@ -47,7 +47,7 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
 ### Component Layer (`components/`)
 
 #### BaseTabComponent
-**File**: `python/presentation/tui/components/base_tab.py`
+**File**: `src/askai/presentation/tui/components/base_tab.py`
 - **Purpose**: Foundation class for all tab components
 - **Features**:
   - Common initialization patterns
@@ -56,7 +56,7 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
   - Standard message passing interface
 
 #### QuestionTab
-**File**: `python/presentation/tui/components/question_tab.py`
+**File**: `src/askai/presentation/tui/components/question_tab.py`
 - **Purpose**: Interactive question creation and AI execution
 - **Features**:
   - Two-panel layout (input/answer)
@@ -67,7 +67,7 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
   - Clear and execute buttons for workflow control
 
 #### ModelTab
-**File**: `python/presentation/tui/components/model_tab.py`
+**File**: `src/askai/presentation/tui/components/model_tab.py`
 - **Purpose**: Real-time AI model browsing and selection
 - **Features**:
   - Live OpenRouter model data with search/filter
@@ -77,10 +77,10 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
   - Direct integration with OpenRouter API
 
 #### CreditsTab
-**File**: `python/presentation/tui/components/credits_tab.py`
+**File**: `src/askai/presentation/tui/components/credits_tab.py`
 - **Purpose**: Real-time credit balance and usage monitoring
 #### PatternTab
-**File**: `python/presentation/tui/components/pattern_tab.py`
+**File**: `src/askai/presentation/tui/components/pattern_tab.py`
 - **Purpose**: Pattern browsing and execution interface
 - **Features**:
   - Two-panel layout (pattern list/details)
@@ -90,7 +90,7 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
   - Quick pattern execution with input validation
 
 #### ChatTab
-**File**: `python/presentation/tui/components/chat_tab.py`
+**File**: `src/askai/presentation/tui/components/chat_tab.py`
 - **Purpose**: Chat history management and browsing
 - **Features**:
   - Chat file listing and management
@@ -101,7 +101,7 @@ The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive termi
 ### Utility Layer (`utils/`)
 
 #### TUI Fallback System
-**File**: `python/presentation/tui/utils/fallback.py`
+**File**: `src/askai/presentation/tui/utils/fallback.py`
 - **Purpose**: Environment detection and graceful degradation
 - **Features**:
   - TUI compatibility checking
