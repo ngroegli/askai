@@ -1,5 +1,5 @@
 """
-Utilities for integration testing of askai-cli.
+Utilities for integration testing of askai.
 """
 import os
 import subprocess
@@ -168,14 +168,17 @@ class TestResult:
         self.details = {}
 
     def set_passed(self, message: str = "Test passed"):
+        """Mark the test as passed with an optional message."""
         self.passed = True
         self.message = message
 
     def set_failed(self, message: str):
+        """Mark the test as failed with a message."""
         self.passed = False
         self.message = message
 
     def add_detail(self, key: str, value: Any):
+        """Add a detail key-value pair to the test result."""
         self.details[key] = value
 
     def __str__(self):

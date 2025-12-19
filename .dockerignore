@@ -33,8 +33,9 @@ tests/
 
 # Documentation
 docs/
-README.md
+# README.md  # Don't exclude README.md as it's needed for package installation
 *.md
+!README.md
 
 # Build artifacts
 build/
@@ -59,5 +60,5 @@ Thumbs.db
 run_*.sh
 install.sh
 askai.sh
-askai-cli.code-workspace
+askai.code-workspace
 Makefile

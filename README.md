@@ -1,55 +1,117 @@
-# Ask AI CLI
+# Ask AI 🤖
 
-[![CI Status](https://github.com/ngroegli/askai-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/ngroegli/askai-cli/actions/workflows/ci.yml)
-[![Code Quality](https://github.com/ngroegli/askai-cli/actions/workflows/pylint.yml/badge.svg)](https://github.com/ngroegli/askai-cli/actions/workflows/pylint.yml)
+[![CI Status](https://github.com/ngroegli/askai/actions/workflows/ci.yml/badge.svg)](https://github.com/ngroegli/askai/actions/workflows/ci.yml)
+[![Code Quality](https://github.com/ngroegli/askai/actions/workflows/pylint.yml/badge.svg)](https://github.com/ngroegli/askai/actions/workflows/pylint.yml)
+[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-- [Ask AI CLI](#ask-ai-cli)
-  - [Features](#features)
-  - [Setup Instructions](#setup-instructions)
-    - [Option 1: Quick Install via Script](#option-1-quick-install-via-script)
-    - [Option 2: Manual Installation](#option-2-manual-installation)
-  - [⚡ Usage Examples](#-usage-examples)
-    - [General Question](#general-question)
-    - [Interpret Previous Terminal Output](#interpret-previous-terminal-output)
-    - [Use Pattern Files as Additional Context](#use-pattern-files-as-additional-context)
-    - [Analyze an Image](#analyze-an-image)
-    - [Analyze a PDF Document](#analyze-a-pdf-document)
-    - [List Available Pattern Files](#list-available-pattern-files)
-    - [Error Analysis with Previous Output](#error-analysis-with-previous-output)
-    - [Save Response to File (Markdown)](#save-response-to-file-markdown)
-    - [Override Default Model](#override-default-model)
-  - [Development Workflow](#development-workflow)
-    - [Integration Tests](#integration-tests)
-  - [Further Documentation](#further-documentation)
-  - [Security Note](#security-note)
-  - [Requirements](#requirements)
-  - [License](#license)
+> **⚡ Not just another ChatGPT wrapper** — Ask AI gives you the **flexibility of quick AI questions** AND the **power of structured workflow patterns**. Use it like ChatGPT for fast answers, or leverage reusable patterns for production workflows.
 
+**Ask AI** is a versatile AI assistant that adapts to your needs:
 
-> **ℹ️ Usage of AI clarification:** To boost efficiency, many parts of the code, content, and even this README are AI-generated.
-
-A simple, modular Linux CLI tool to interact with [OpenRouter.ai](https://openrouter.ai) using Python and `requests`. The core feature is the use of **patterns**—predefined prompts with structured inputs and outputs—for powerful, repeatable AI workflows. Ask general questions, analyze previous command-line output, leverage pattern files for specialized tasks, and save responses to files — all from your terminal.
+- 🚀 **Quick & Flexible**: Ask questions, analyze files, pipe command output — zero setup required
+- 🎯 **Structured Workflows**: Create reusable patterns for consistent, production-ready automation
+- 💬 **Context-Aware**: Persistent chat sessions with full conversation memory
+- 📸 **Multimodal**: Work with text, images, PDFs, and URLs seamlessly
+- 🎨 **Multiple Outputs**: Console, files (Markdown/JSON/HTML), or pipe to other tools
+- �️ **Your Choice**: CLI for scripts, REST API for integrations, TUI for interactive use
 
 ---
 
-## Features
+## 🎯 What Makes AskAI Different?
 
-* Ask general AI questions via CLI
-* Feed previous terminal output via stdin
-* Analyze images with vision-capable AI models
-* Extract and analyze text from PDF documents
-* Load predefined pattern instructions from `patterns/` folder
-* Output responses to Markdown, JSON, or plain text
-* Supports default model via config file
-* Override model easily via CLI
-* List available system files for quick selection
-* No bulky SDKs — pure Python with `requests`
+### The Best of Both Worlds: Flexibility **AND** Structure
+
+AskAI gives you **two powerful ways** to work with AI, each valuable for different scenarios:
+
+#### 🚀 Quick Questions: Fast & Flexible
+
+Perfect for exploration, one-off tasks, and rapid experimentation:
+
+```bash
+# Ask anything, instantly
+askai -q "What's the fastest sorting algorithm?"
+
+# Analyze files on the fly
+askai -fi error.log -q "What's causing these errors?"
+
+# Pipe command output
+systemctl status nginx | askai -q "Is this healthy?"
+```
+
+✅ **Zero setup** — Just ask and get answers
+✅ **Completely flexible** — Any question, any context
+✅ **Perfect for learning** — Experiment and iterate quickly
+
+#### 🎯 Pattern Workflows: Structured & Reusable
+
+When you find a workflow worth repeating, turn it into a **pattern** — think "infrastructure as code" for AI:
+
+```yaml
+# Pattern: log_interpretation.md
+name: "Log Analysis Expert"
+inputs:
+  - name: log_file
+    description: Path to log file
+  - name: log_level
+    description: Filter by severity (ERROR, WARN, INFO)
+outputs:
+  - name: issues
+    type: json
+    description: Structured list of issues found
+  - name: recommendations
+    type: markdown
+    description: Action items to resolve issues
+```
+
+```bash
+# Execute with structured inputs
+askai -up log_interpretation -pi '{
+  "log_file": "/var/log/nginx/error.log",
+  "log_level": "ERROR"
+}'
+
+# Get consistent, structured outputs every time
+# No prompt engineering needed — the pattern handles it!
+```
+
+✅ **Consistent results** — Same analysis methodology every time
+✅ **Team collaboration** — Share patterns across organization
+✅ **Production-ready** — Structured outputs for automation
+✅ **Still fast** — One command, repeatable workflow
+
+### When to Use Each Approach
+
+| Scenario | Best Choice | Why |
+|----------|-------------|-----|
+| "What does this error mean?" | **Quick Question** | One-off investigation, need flexibility |
+| Daily log analysis for ops team | **Pattern** | Consistency, team alignment, automation |
+| Trying different prompt variations | **Quick Question** | Fast iteration and experimentation |
+| Standard compliance reporting | **Pattern** | Audit trail, standardized output |
+| Learning a new technology | **Quick Question** | Conversational, exploratory |
+| CI/CD integration | **Pattern** | Reliable, structured, scriptable |
+
+### Built-In Patterns (Ready to Use)
+
+| Pattern | What It Does | Example Use Case |
+|---------|--------------|------------------|
+| **log_interpretation** | Analyzes logs, finds patterns, suggests fixes | Production debugging, security audits |
+| **kql_generation** | Generates KQL queries from natural language | Azure Sentinel query building |
+| **linux_cli_command_generation** | Creates shell commands from descriptions | DevOps automation, learning Linux |
+| **pdf_summary** | Extracts key points from documents | Research papers, compliance docs |
+| **data_visualization** | Generates visualization code (Python/R) | Data analysis, report generation |
+
+**📁 Browse `patterns/` folder** — use as-is, modify, or create your own!
+
+**The power is in having both.** Start with quick questions for exploration, graduate to patterns when you find workflows worth standardizing.
 
 ---
 
-## Setup Instructions
+## 🚀 Quick Start
 
-### Option 1: Quick Install via Script
+### Installation
+
+**Option 1: Quick Install (Recommended)**
 
 The installer handles:
 
@@ -60,8 +122,8 @@ The installer handles:
 
 
 ```bash
-git clone https://github.com/ngroegli/askai-cli
-cd askai-cli
+git clone https://github.com/ngroegli/askai
+cd askai
 chmod +x install.sh
 ./install.sh
 ```
@@ -85,17 +147,13 @@ Reload your shell:
 source ~/.zshrc   # or ~/.bashrc
 ```
 
----
-
-### Option 2: Manual Installation
-
-For manual control:
+**Option 2: Manual Installation**
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/ngroegli/askai-cli
-cd askai-cli
+git clone https://github.com/ngroegli/askai
+cd askai
 ```
 
 2. Create and activate a virtual environment:
@@ -140,172 +198,335 @@ sudo ln -s /full/path/to/askai/askai.py /usr/local/bin/askai
 
 ---
 
-## ⚡ Usage Examples
+## 💡 Usage Examples
 
-### General Question
+### 1. Quick Questions — Fast & Simple ⚡
+
+Get instant answers without any setup:
 
 ```bash
-askai -q "What is the capital of Japan?"
+# Ask anything
+askai -q "What's the difference between TCP and UDP?"
+
+# Get code explanations
+askai -q "Explain this regex: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
+# Quick troubleshooting
+askai -q "Why would a Python script give 'ModuleNotFoundError'?"
 ```
 
-### Interpret Previous Terminal Output
+### 2. Analyze Files & Context 📁
+
+Work with files directly — no copying and pasting:
 
 ```bash
-ls -la | askai -q "Explain this folder content output."
+# Analyze text files
+askai -fi error.log -q "What are the most critical errors?"
+
+# Review code
+askai -fi script.py -q "Are there any security issues in this code?"
+
+# Analyze images
+askai -img screenshot.png -q "What's wrong with this UI?"
+
+# Process PDFs
+askai -pdf report.pdf -q "Summarize the key findings"
+
+# Scrape and analyze web content
+askai -url https://example.com/article -q "What's the main argument?"
 ```
 
+### 3. Pipe Command Output 🔄
 
-### Use Pattern Files as Additional Context
+The power of Unix pipes + AI:
 
 ```bash
-askai -up log_interpretation -pi '{"log_file": "/var/log/auth.log", "log_level": "ERROR", "max_patterns": 5}'
+# Debug errors in real-time
+systemctl status nginx 2>&1 | askai -q "Is this healthy?"
+
+# Analyze system state
+docker ps -a | askai -q "Which containers are stopped and why might that be?"
+
+# Get explanations
+ls -la | askai -q "Explain the permissions and ownership"
+
+# Smart filtering
+journalctl -u ssh -n 100 | askai -q "Any suspicious login attempts?"
 ```
 
-Pattern files live inside the `patterns/` folder and contain reusable instructions for the AI. Use the `-pi` flag to provide pattern inputs as a JSON object matching the pattern's input specification. For details on available inputs, see the corresponding pattern markdown file in the `patterns/` folder.
+### 4. Pattern Workflows — Structured & Repeatable 🎯
 
-### Analyze an Image
-
-```bash
-askai -img /path/to/image.jpg -q "What can you see in this image?"
-```
-
-You can also analyze images directly from URLs:
+When you need consistency and reusability:
 
 ```bash
-askai -img-url https://example.com/image.jpg -q "What can you see in this image?"
-```
-
-The tool automatically uses a vision-capable model when images are provided. Supported image formats include JPG, PNG, GIF, and WebP.
-
-### Analyze a PDF Document
-
-```bash
-askai -pdf /path/to/document.pdf -q "Summarize this document."
-```
-
-You can also analyze PDFs directly from URLs:
-
-```bash
-askai -pdf-url https://bitcoin.org/bitcoin.pdf -q "Summarize this document."
-```
-
-Note: The PDF URL must point directly to a valid PDF file that's publicly accessible. This feature requires a model that supports PDF processing (such as Claude models) and will automatically configure the necessary plugins.
-
-Sends the PDF content directly to the AI for analysis using the format specified in the OpenRouter documentation. The file must have a `.pdf` extension to be processed as a PDF document. If a non-PDF file is provided, it will be treated as a regular text file.
-
-### List Available Pattern Files
-
-```bash
+# List available patterns
 askai --list-patterns
+
+# Production log analysis
+askai -up log_interpretation -pi '{
+  "log_file": "/var/log/nginx/error.log",
+  "log_level": "ERROR"
+}'
+
+# Generate database queries
+askai -up kql_generation -pi '{
+  "query_description": "Show failed login attempts in last 24 hours",
+  "data_source": "SecurityEvent"
+}'
+
+# DevOps automation
+askai -up linux_cli_command_generation -pi '{
+  "task_description": "Find all files larger than 100MB modified in last 7 days"
+}'
 ```
 
-Displays all files available under `patterns/`.
+**💡 Pro tip**: Patterns use the same `-fi`, `-img`, `-pdf` flags as quick questions, but with structured inputs and consistent outputs!
 
-### Error Analysis with Previous Output
+### 5. Save & Format Output 💾
+
+Export results in multiple formats:
 
 ```bash
-cat nonexistent.txt 2>&1 | askai -q "Why can't I read this file?"
+# Save as Markdown (default)
+askai -q "Top 5 Python frameworks" -o report.md -f md
+
+# Get JSON output for automation
+askai -q "List HTTP status codes" -f json -o data.json
+
+# Generate HTML reports
+askai -up log_interpretation -pi '{"log_file": "app.log"}' -f html -o report.html
+
+# Combine with patterns
+askai -up pdf_summary -pi '{"pdf_file": "report.pdf"}' -o summary.md
 ```
 
-### Save Response to File (Markdown)
+### 6. Interactive Chat Sessions 💬
+
+Have persistent conversations with context:
 
 ```bash
-askai -q "List 5 AI use cases" -o output.md -f md
+# Start interactive chat mode (TUI interface)
+askai --interactive
+# Or use the short form
+askai -i
+
+# Within the interface, have multi-turn conversations:
+> Explain Docker containers
+> How do I mount volumes?
+> Show me an example docker-compose.yml
 ```
 
-### Override Default Model
+The interactive mode maintains full conversation context — perfect for learning, debugging, or exploring complex topics!
+
+### 7. Advanced Options ⚙️
+
+Fine-tune your AI interactions:
 
 ```bash
-askai -q "Tell me a joke" -m "anthropic/claude-3-opus-2024-06-20"
+# Override default AI model
+askai -q "Tell me a joke" -m "anthropic/claude-3-opus-20240229"
+
+# Combine multiple inputs (multimodal)
+askai -img diagram.jpg -pdf specs.pdf -q "Does the diagram match the specifications?"
+
+# Use different models for patterns
+askai -up data_visualization -pi '{"data": "sales.csv"}' -m "anthropic/claude-3.5-sonnet"
 ```
 
-## Development Workflow
+---
 
-The project uses GitHub Actions for continuous integration:
+## 🎯 Key Features
 
-- All code is automatically checked with Pylint when pushed to the `main` or `develop` branches
-- Pull requests to `main` are checked against quality standards:
-  - Critical errors (E category in Pylint) will block the PR
-  - Warnings and convention issues are reported but don't block merges
+| Feature | Description | Best For |
+|---------|-------------|----------|
+| 🚀 **Quick Questions** | Ask anything, instant answers | Exploration, learning, one-off tasks |
+| 🎯 **Pattern Workflows** | Structured, reusable AI processes | Production use, team collaboration, automation |
+| 💬 **Chat Sessions** | Persistent multi-turn conversations | Deep problem-solving, learning complex topics |
+| � **Multimodal Support** | Text, images, PDFs, URLs | Document analysis, visual debugging |
+| � **Unix Pipes** | Pipe command output directly to AI | Real-time debugging, system analysis |
+| 🎨 **Multiple Output Formats** | Markdown, JSON, HTML, plain text | Integration, reporting, automation |
+| 🖥️ **Three Interfaces** | CLI, REST API, Terminal UI (TUI) | Different workflows and preferences |
+| 🔌 **Extensible** | Custom patterns, multiple AI providers | Tailored to your specific needs |
+| 🔒 **Secure** | Path validation, API key management | Enterprise-ready security |
+| 🧪 **Production-Ready** | 300+ tests, CI/CD, comprehensive docs | Professional development workflows |
 
-Branch structure:
-- `main`: Stable production code
-- `develop`: Integration branch for new features
-- Feature branches: Created from `develop` for individual features
+---
 
-### Architecture Overview
+## 📚 Documentation
 
-The project follows a modern layered architecture with clear separation of concerns:
+### For Users
 
-- **`shared/`**: Common utilities, configuration, and logging infrastructure
-- **`modules/`**: Core business logic (AI services, patterns, chat, questions, messaging)
-- **`presentation/`**: User interface layer (CLI components)
-- **`infrastructure/`**: External output processing and coordination
+- **[USER_MANUAL.md](docs/USER_MANUAL.md)** - Complete user guide with advanced features
+- **[TUI_USER_MANUAL.md](docs/TUI_USER_MANUAL.md)** - Terminal UI guide for interactive mode
+- **Pattern Files** - Check `patterns/` folder for examples and templates
 
-This structure promotes maintainability, testability, and clear separation of responsibilities. For detailed architecture information, see [SOFTWARE_ARCHITECTURE.md](./docs/SOFTWARE_ARCHITECTURE.md).
+### For Developers
 
-For contributors:
-1. Fork the repository
-2. Create your feature branch from `develop`
-3. Make your changes
-4. Run `pylint --rcfile=.pylintrc python/**/*.py` locally to catch issues early
-5. Run the integration tests to verify your changes work correctly (see below)
-6. Submit a pull request to the `develop` branch
+- **[SOFTWARE_ARCHITECTURE.md](docs/SOFTWARE_ARCHITECTURE.md)** - System architecture and design
+- **[TECHNICAL_ARCHITECTURE.md](docs/TECHNICAL_ARCHITECTURE.md)** - Implementation details
+- **[API_IMPLEMENTATION.md](docs/API_IMPLEMENTATION.md)** - REST API documentation
+- **[TESTING_README.md](docs/TESTING_README.md)** - Testing guide and conventions
 
-### Integration Tests
+### For Contributors
 
-The project includes a comprehensive test suite to verify the CLI functionality:
+- **[CI_PIPELINE.md](docs/CI_PIPELINE.md)** - CI/CD workflows and processes
+- **[BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md)** - Git workflow and PR guidelines
+- **[VERSION_MANAGEMENT.md](docs/VERSION_MANAGEMENT.md)** - Release and versioning
+
+**Full documentation index:** See [docs/](docs/) folder for complete documentation listing.
+
+---
+
+## 🏗️ Architecture Overview
+
+AskAI follows a modern layered architecture:
+
+```
+┌─────────────────────────────────────────┐
+│     Presentation Layer                  │
+│  ┌─────────┬──────────┬──────────────┐ │
+│  │   CLI   │  REST API │     TUI      │ │
+│  └─────────┴──────────┴──────────────┘ │
+├─────────────────────────────────────────┤
+│         Application Layer               │
+│  ┌──────────────┬───────────────────┐  │
+│  │  Patterns    │  Questions │ Chat │  │
+│  └──────────────┴───────────────────┘  │
+├─────────────────────────────────────────┤
+│          Service Layer                  │
+│  ┌──────────────────────────────────┐  │
+│  │    AI Service (OpenRouter)       │  │
+│  └──────────────────────────────────┘  │
+├─────────────────────────────────────────┤
+│       Infrastructure Layer              │
+│  ┌────────┬─────────┬────────────────┐ │
+│  │ Config │ Logging │ Output Writers │ │
+│  └────────┴─────────┴────────────────┘ │
+└─────────────────────────────────────────┘
+```
+
+**Key directories:**
+- `src/askai/core/` - Business logic (AI, patterns, questions, chat)
+- `src/askai/presentation/` - User interfaces (CLI, API, TUI)
+- `src/askai/output/` - Output processing (formatters, writers)
+- `src/askai/utils/` - Shared utilities (config, logging)
+
+---
+
+## 🛠️ Development
+
+### Setting Up Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/ngroegli/askai
+cd askai
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run tests
+make test-unit
+make test-integration
+```
 
 ```bash
 # Run all tests
+make test
+
+# Run unit tests only
+make test-unit
+
+# Run integration tests
 make test-integration
 
-# Run only automated tests (no user interaction)
-make test-integration-automated
-
-# Run tests for a specific category
-make test-integration-general
-make test-integration-question
+# Run specific test category
 make test-integration-pattern
+make test-integration-question
 
-# List all available tests
-make list-tests
+# Check code quality
+make lint
 ```
 
-Tests are organized into three categories:
-- **General**: Tests for basic CLI functionality (help, error handling, etc.)
-- **Question**: Tests for question-asking functionality
-- **Pattern**: Tests for pattern-related functionality
+### Contributing
 
+We welcome contributions! Here's how:
 
-For more details, see [tests/README.md](./tests/README.md).
+1. **Fork** the repository
+2. **Create** your feature branch from `develop`:
+   ```bash
+   git checkout -b feature/amazing-feature develop
+   ```
+3. **Make** your changes and test thoroughly
+4. **Run** quality checks:
+   ```bash
+   make lint
+   make test
+   ```
+5. **Submit** a pull request to `develop` branch
 
-See [BRANCH_PROTECTION.md](./docs/BRANCH_PROTECTION.md) for detailed information on branch protection rules and workflow.
+**Branch structure:**
+- `main` - Stable production releases
+- `develop` - Integration branch for features
+- `feature/*` - Individual feature branches
+
+See [BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for detailed workflow guidelines.
+
+### CI/CD Pipeline
+
+GitHub Actions automatically:
+- ✅ Runs Pylint checks on all pushes
+- ✅ Executes test suite on pull requests
+- ✅ Blocks PRs with critical errors
+- ✅ Generates security reports with CodeQL
+
+See [CI_PIPELINE.md](docs/CI_PIPELINE.md) for complete CI/CD documentation.
 
 ---
 
-## Further Documentation
+## 🔐 Security
 
-Comprehensive documentation is available in the `docs/` folder:
+- **API keys** are stored locally in `~/.askai_config.yml` (never committed to git)
+- **Path validation** prevents directory traversal attacks
+- **CodeQL scanning** runs on every push to detect security issues
+- **Dependency audits** via GitHub Dependabot
 
-- [SOFTWARE_ARCHITECTURE.md](./docs/SOFTWARE_ARCHITECTURE.md): System architecture and design
-- [USER_MANUAL.md](./docs/USER_MANUAL.md): Detailed user manual and advanced usage
-
-The main README provides installation and basic usage examples. For advanced features, troubleshooting, and customization, see the user manual.
-
-## Security Note
-
-Your API key is stored locally in `~/.askai_config.yml`. Ensure this file is excluded from version control with `.gitignore`.
+Report security vulnerabilities privately via GitHub Security Advisories.
 
 ---
 
-## Requirements
+## 🤝 Contributing
 
-* Python 3.7+
-* Dependencies listed in `requirements.txt`
+Contributions are welcome! Please see:
+- [BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) - Git workflow and PR process
+- [CI_PIPELINE.md](docs/CI_PIPELINE.md) - CI/CD and quality checks
+- [TESTING_README.md](docs/TESTING_README.md) - Testing guidelines
 
 ---
 
-## License
+## 📄 License
 
-[Please refer to GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007](./LICENSE)
+[GNU General Public License v3.0](LICENSE) - See LICENSE file for details.
+
+---
+
+## 🌟 Support & Community
+
+- 📖 **Documentation**: Browse the [docs/](docs/) folder
+- 🐛 **Issues**: Report bugs on [GitHub Issues](https://github.com/ngroegli/askai/issues)
+- 💬 **Discussions**: Join [GitHub Discussions](https://github.com/ngroegli/askai/discussions)
+
+---
+
+## ⚙️ Requirements
+
+- Python 3.7 or higher
+- OpenRouter API key
+- Dependencies: See [requirements.txt](requirements.txt)
+
+---
+

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Docker management script for AskAI CLI with version awareness.
+Docker management script for Ask AI with version awareness.
 
 Provides utilities for building, tagging, and managing Docker images
 with proper version management integration.
@@ -35,7 +35,7 @@ def run_command(cmd, check=True):
         # Fallback for complex docker commands that need shell=True
         result = subprocess.run(cmd, shell=True, check=False)  # nosec B602
 
-    if check and result.returncode != 0:
+    if check and result.returncode:
         print(f"Command failed with exit code {result.returncode}")
         sys.exit(1)
     return result.returncode
@@ -43,7 +43,7 @@ def run_command(cmd, check=True):
 def build_image(version=None, tag_latest=True):
     """Build Docker image with version tag."""
     version = version or current_version
-    image_name = "askai-cli"
+    image_name = "askai"
 
     # Build with version tag
     cmd = f"docker build -t {image_name}:{version} ."
@@ -61,7 +61,7 @@ def build_image(version=None, tag_latest=True):
 def push_image(version=None, registry=None, push_latest=True):
     """Push Docker image to registry."""
     version = version or current_version
-    image_name = "askai-cli"
+    image_name = "askai"
 
     if registry:
         image_name = f"{registry}/{image_name}"
@@ -95,7 +95,7 @@ def stop_compose():
 
 def clean_images(keep_latest=True):
     """Clean up old Docker images."""
-    image_name = "askai-cli"
+    image_name = "askai"
 
     if keep_latest:
         # Remove all tags except latest and current version
@@ -112,17 +112,17 @@ def clean_images(keep_latest=True):
 def show_status():
     """Show Docker status and running containers."""
     print("=== Docker Images ===")
-    run_command("docker images askai-cli", check=False)
+    run_command("docker images askai", check=False)
 
     print("\n=== Running Containers ===")
-    run_command("docker ps --filter ancestor=askai-cli", check=False)
+    run_command("docker ps --filter ancestor=askai", check=False)
 
     print("\n=== Compose Services ===")
     run_command("docker-compose ps", check=False)
 
 def main():
     """Main function for Docker management."""
-    parser = argparse.ArgumentParser(description="Docker management for AskAI CLI")
+    parser = argparse.ArgumentParser(description="Docker management for Ask AI")
     subparsers = parser.add_subparsers(dest='action', help='Available actions')
 
     # Build command

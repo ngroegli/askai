@@ -3,32 +3,16 @@ Credits Tab Component.
 Displays OpenRouter credit balance and usage information.
 """
 
-from typing import TYPE_CHECKING
 from datetime import datetime
+from textual.widgets import Static, Button, ProgressBar
+from textual.containers import Vertical, Horizontal, VerticalScroll
+
+from askai.core.ai import OpenRouterClient
+
 from .base_tab import BaseTabComponent
 
-from ..common import (
-    Static, Button, ProgressBar, Vertical, Horizontal,
-    VerticalScroll, StatusMixin
-)
 
-try:
-    from askai.modules.ai import OpenRouterClient
-except ImportError:
-    if not TYPE_CHECKING:
-        OpenRouterClient = object
-
-        def load_config():
-            """Fallback config loader."""
-            return {}
-
-if TYPE_CHECKING:
-    from textual.widgets import Static, Button, ProgressBar
-    from textual.containers import Vertical, Horizontal, VerticalScroll
-    from askai.modules.ai import OpenRouterClient
-
-
-class CreditsTab(BaseTabComponent, StatusMixin):
+class CreditsTab(BaseTabComponent):
     """Credits monitoring tab component."""
 
     def __init__(self, *args, **kwargs):
@@ -120,6 +104,7 @@ class CreditsTab(BaseTabComponent, StatusMixin):
             status_display.update(f"❌ Error: {e}")
 
     def _update_credit_display(self):
+        # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         """Update the credit display with real data."""
         if not self.credit_data:
             return

@@ -3,26 +3,20 @@ TUI (Terminal User Interface) components for AskAI using Textual framework.
 
 This module provides modern, interactive terminal interfaces for pattern management,
 chat browsing, and other AskAI features. It gracefully falls back to the traditional
-CLI interface when Textual is unavailable or the terminal is incompatible.
+CLI interface when the terminal is incompatible.
 """
 
 import os
 import sys
 
-try:
-    import textual  # noqa: F401 # pylint: disable=unused-import # type: ignore[reportUnusedImport]
-    TEXTUAL_AVAILABLE = True
-    # Store reference to avoid unused import warning
-    _TEXTUAL_MODULE = textual
-except ImportError:
-    TEXTUAL_AVAILABLE = False
-    _TEXTUAL_MODULE = None
+import textual  # noqa: F401 # pylint: disable=unused-import # type: ignore[reportUnusedImport]
+
+# Module-level constants for TUI availability
+TEXTUAL_AVAILABLE = True  # Used by other modules to check TUI support
 
 
 def is_tui_available() -> bool:
     """Check if TUI can be used in the current environment."""
-    if not TEXTUAL_AVAILABLE:
-        return False
 
     # Check if we're in a terminal
     if not os.isatty(sys.stdout.fileno()):
@@ -58,4 +52,5 @@ def get_tui_config() -> dict:
     }
 
 
-__all__ = ['is_tui_available', 'get_tui_config']
+# Export public API
+__all__ = ['TEXTUAL_AVAILABLE', 'is_tui_available', 'get_tui_config']

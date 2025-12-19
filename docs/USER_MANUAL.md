@@ -1,6 +1,6 @@
-# AskAI CLI User Manual
+# Ask AI User Manual
 
-This manual provides detailed instructions and advanced usage scenarios for AskAI CLI. For installation and basic examples, see the main README.
+This manual provides detailed instructions and advanced usage scenarios for Ask AI. For installation and basic examples, see the main README.
 
 ## Table of Contents
 1. Getting Started
@@ -18,17 +18,17 @@ This manual provides detailed instructions and advanced usage scenarios for AskA
 
 ## 1. Getting Started
 
-After installation, configure your API key and preferred models in `~/.askai_config.yml`. See the README for setup instructions.
+After installation, configure your API key and preferred models in `~/.askai/config.yml`. See the README for setup instructions.
 
 ## 2. Configuration
 
-- Configuration is managed via a YAML file (`~/.askai_config.yml`).
+- Configuration is managed via a YAML file (`~/.askai/config.yml`).
 - You can run the setup wizard for interactive configuration.
 - The application uses a modern layered architecture with clean separation of concerns:
-  - **Shared layer**: Configuration, logging, and utilities
-  - **Modules layer**: Core business logic (AI services, patterns, chat, questions)
-  - **Presentation layer**: CLI interface and user interaction
-  - **Infrastructure layer**: Output processing and file operations
+  - **Utils Layer**: Configuration, logging, and utilities (`src/askai/utils/`)
+  - **Core Layer**: Business logic (AI services, patterns, chat, questions, messaging) (`src/askai/core/`)
+  - **Presentation Layer**: CLI/TUI interface and REST API (`src/askai/presentation/`)
+  - **Output Layer**: Response processing and file operations (`src/askai/output/`)
 - See `docs/SOFTWARE_ARCHITECTURE.md` for detailed architecture information.
 
 ## 3. Command-Line Options

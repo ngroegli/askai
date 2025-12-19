@@ -1,5 +1,5 @@
 """
-TUI components for the AskAI CLI application.
+TUI components for the Ask AI application.
 """
 
 from .loading_screen import LoadingScreen, ResponseViewerScreen, create_loading_screen, create_response_viewer_screen

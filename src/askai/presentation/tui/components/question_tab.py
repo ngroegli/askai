@@ -3,21 +3,14 @@ Question Builder Tab Component.
 Handles the question creation interface with inputs, format selection, and execution.
 """
 
-from typing import TYPE_CHECKING
+from textual.widgets import Static, Button, TextArea, Select, Input
+from textual.containers import Vertical, Horizontal, VerticalScroll
+from textual.message import Message
+
 from .base_tab import BaseTabComponent
 
-from ..common import (
-    Static, Button, TextArea, Select, Input,
-    Vertical, Horizontal, VerticalScroll, Message, StatusMixin
-)
 
-if TYPE_CHECKING:
-    from textual.widgets import Static, Button, TextArea, Select, Input
-    from textual.containers import Vertical, Horizontal, VerticalScroll
-    from textual.message import Message
-
-
-class QuestionTab(BaseTabComponent, StatusMixin):
+class QuestionTab(BaseTabComponent):
     """Question Builder tab component."""
 
     class QuestionSubmitted(Message):

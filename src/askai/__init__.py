@@ -1,5 +1,5 @@
 """
-AskAI CLI - AI-powered command line interface for intelligent question processing.
+Ask AI - AI-powered interface for intelligent question processing.
 
 This package provides a comprehensive CLI tool that leverages AI to process questions,
 manage patterns, and provide intelligent responses through multiple interfaces including
@@ -14,8 +14,8 @@ __email__ = "info@askai.com"
 __license__ = "MIT"
 
 # Import main components for easy access
-from .shared.config.loader import load_config
-from .shared.logging import setup_logger, get_logger
+from .utils.config import load_config
+from .utils.logging import setup_logger, get_logger
 
 __all__ = [
     '__version__',

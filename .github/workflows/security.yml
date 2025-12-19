@@ -34,6 +34,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
 
       - name: Install dependencies
         run: |
@@ -67,6 +69,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
 
       - name: Install Bandit
         run: |
@@ -117,12 +121,12 @@ jobs:
 
       - name: Build Docker image for scanning
         run: |
-          docker build -t askai-cli:scan-target .
+          docker build -t askai:scan-target .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "askai-cli:scan-target"
+          image-ref: "askai:scan-target"
           format: "sarif"
           output: "trivy-results.sarif"
 
@@ -135,7 +139,7 @@ jobs:
       - name: Run Trivy for human-readable output
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "askai-cli:scan-target"
+          image-ref: "askai:scan-target"
           format: "table"
 
   codeql-analysis:

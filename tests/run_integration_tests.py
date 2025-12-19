@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Main runner for askai-cli integration tests.
+Main runner for askai integration tests.
 """
 import os
 import sys
@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(project_root, "src"))
 # pylint: disable=wrong-import-position
 # Now we can import project modules
 from tests.integration.test_base import BaseIntegrationTest, AutomatedTest, SemiAutomatedTest
-from askai.shared.config.loader import (
+from askai.utils.config import (
     ASKAI_DIR, CONFIG_PATH, TEST_DIR, TEST_CONFIG_PATH,
     create_directory_structure, create_test_config_from_production
 )
@@ -108,7 +108,7 @@ def discover_tests() -> Dict[str, Type[BaseIntegrationTest]]:
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Run integration tests for askai-cli")
+    parser = argparse.ArgumentParser(description="Run integration tests for askai")
     parser.add_argument(
         "--automated-only",
         action="store_true",

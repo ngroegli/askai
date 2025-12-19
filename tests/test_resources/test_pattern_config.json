@@ -4,10 +4,10 @@
       "name": "data_visualization",
       "description": "Test data visualization pattern with sample data",
       "input": {
-        "csv_file": "/home/nicola/Git/askai-cli/tests/test_resources/test_data.csv",
+        "csv_file": "/home/nicola/Git/askai/tests/test_resources/test_data.csv",
         "chart_type": "bar",
         "title": "Sales Data Visualization",
-        "include_3d": false,
+        "include_3d": "no",
         "x_axis_label": "Products",
         "y_axis_label": "Sales"
       },
@@ -22,10 +22,7 @@
       "description": "Test image interpretation pattern",
       "input": {
         "image_url": "https://example.com/test.jpg",
-        "analysis_focus": "content",
-        "detail_level": "comprehensive",
-        "include_technical_details": true,
-        "custom_instructions": "Analyze this image for content and describe what you see"
+        "detail_level": "detailed"
       },
       "expected_patterns": [
         "No content found for output detailed_analysis - will have empty output",
@@ -69,9 +66,9 @@
       "description": "Test Linux CLI command generation pattern",
       "input": {
         "scenario_description": "Find all files larger than 100MB in the /var/log directory",
-        "command_style": "modern",
+        "command_style": "efficient",
         "include_explanation": true,
-        "safety_level": "safe"
+        "safety_level": "standard"
       },
       "expected_patterns": [
         "find|locate",
@@ -83,7 +80,7 @@
       "name": "log_interpretation",
       "description": "Test log interpretation pattern",
       "input": {
-        "log_file": "/home/nicola/Git/askai-cli/tests/test_resources/test.log",
+        "log_file": "/home/nicola/Git/askai/tests/test_resources/test.log",
         "analysis_depth": "detailed",
         "include_recommendations": true,
         "focus_areas": "errors, performance, security"

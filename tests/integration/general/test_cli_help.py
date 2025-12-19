@@ -1,5 +1,5 @@
 """
-Integration tests for the askai CLI help functionality.
+Integration tests for the askai help functionality.
 """
 from tests.integration.test_base import AutomatedTest
 from tests.integration.test_utils import run_cli_command, verify_output_contains

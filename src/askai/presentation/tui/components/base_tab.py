@@ -2,13 +2,8 @@
 Base component for tab content in the TUI interface.
 """
 
-from typing import TYPE_CHECKING
-
-from ..common import Static, Vertical
-
-if TYPE_CHECKING:
-    from textual.widgets import Static
-    from textual.containers import Vertical
+from textual.widgets import Static
+from textual.containers import Vertical
 
 
 class BaseTabComponent(Vertical):

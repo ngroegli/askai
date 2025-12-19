@@ -88,7 +88,7 @@ pip install -r requirements.txt
 # Start development server
 make api-dev
 # or
-cd python/presentation/api && python run.py --debug
+cd src/askai/presentation/api && python run.py --debug
 
 # Test API
 make api-test
@@ -115,7 +115,7 @@ Once running:
 
 ## 🔧 Configuration
 
-The API uses the same configuration as the AskAI CLI:
+The API uses the same configuration as Ask AI:
 - Configuration file: `~/.askai/config.yml`
 - Environment variables for Flask settings
 - Docker volume mounting for config access
