@@ -1,5 +1,5 @@
 """
-Utilities package for AskAI CLI.
+Utilities package for Ask AI.
 
 This package contains shared utilities, configuration management,
 logging setup, and helper functions used across the application.

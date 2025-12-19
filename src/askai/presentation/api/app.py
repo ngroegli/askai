@@ -63,7 +63,7 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
-    # Configure shared logger for consistency with CLI application
+    # Configure shared logger for consistency with the application
     try:
         askai_config = load_config()
         if askai_config:

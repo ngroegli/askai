@@ -1,5 +1,5 @@
 """
-AskAI CLI - AI-powered command line interface for intelligent question processing.
+Ask AI - AI-powered interface for intelligent question processing.
 
 This package provides a comprehensive CLI tool that leverages AI to process questions,
 manage patterns, and provide intelligent responses through multiple interfaces including

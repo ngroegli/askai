@@ -32,7 +32,7 @@
 
 ## System Overview
 
-AskAI CLI is a sophisticated command-line interface application that provides AI-powered assistance through structured patterns and interactive conversations. The system integrates with multiple AI providers through the OpenRouter API and supports various input formats including text, images, PDFs, and URLs.
+Ask AI is a sophisticated application that provides AI-powered assistance through structured patterns and interactive conversations. The system integrates with multiple AI providers through the OpenRouter API and supports various input formats including text, images, PDFs, and URLs.
 
 ### Key Features
 - **Pattern-based AI Interactions**: Pre-defined pattern templates for specific use cases
@@ -584,7 +584,7 @@ AskAI CLI provides a comprehensive REST API that exposes core functionality thro
 ### API Integration Features
 
 #### CLI Logger Integration
-- Uses same logging configuration as CLI application
+- Uses same logging configuration as the application
 - Consistent log format and levels across interfaces
 - Shared logger setup through `setup_logger()` function
 
@@ -620,7 +620,7 @@ The REST API provides a powerful, standards-compliant interface to AskAI CLI fun
 
 ## CLI Integration with `-q` and `-o` Flags
 
-The file writing system seamlessly integrates with the command-line interface, particularly with the question (`-q`) and output directory (`-o`) flags:
+The file writing system seamlessly integrates with the interface, particularly with the question (`-q`) and output directory (`-o`) flags:
 
 #### Question Mode with Output Directory
 ```bash

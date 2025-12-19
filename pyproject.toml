@@ -3,9 +3,9 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "askai-cli"
+name = "askai"
 version = "1.2.1"
-description = "AI-powered CLI tool for intelligent question processing and pattern management"
+description = "AI-powered tool for intelligent question processing and pattern management"
 authors = [{name = "AskAI Team", email = "info@askai.com"}]
 license = {text = "MIT"}
 readme = "README.md"

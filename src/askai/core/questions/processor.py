@@ -1,5 +1,5 @@
 """
-Question processor for the AskAI CLI.
+Question processor for Ask AI.
 Handles standalone question processing separate from patterns.
 """
 

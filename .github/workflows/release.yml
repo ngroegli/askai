@@ -276,7 +276,7 @@ jobs:
 
           ### Python Package
           ```bash
-          pip install askai-cli==${{ needs.validate-release.outputs.version }}
+          pip install askai==${{ needs.validate-release.outputs.version }}
           ```
 
           ## 🔒 Security

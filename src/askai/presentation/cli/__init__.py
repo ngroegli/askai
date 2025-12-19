@@ -1,5 +1,5 @@
 """
-Command-line interface package for AskAI CLI.
+Command-line interface package for Ask AI.
 
 This package provides command parsing, argument handling, and execution
 of user commands from the terminal.

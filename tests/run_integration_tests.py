@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Main runner for askai-cli integration tests.
+Main runner for askai integration tests.
 """
 import os
 import sys
@@ -108,7 +108,7 @@ def discover_tests() -> Dict[str, Type[BaseIntegrationTest]]:
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Run integration tests for askai-cli")
+    parser = argparse.ArgumentParser(description="Run integration tests for askai")
     parser.add_argument(
         "--automated-only",
         action="store_true",

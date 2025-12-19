@@ -268,7 +268,7 @@ class TestBannerDisplay(BaseUnitTest):
         """Test banner generation and formatting."""
         try:
             # Mock banner content
-            app_name = "AskAI CLI"
+            app_name = "Ask AI"
             version = "1.0.0"
             description = "AI-powered command line assistant"
 
@@ -358,7 +358,7 @@ class TestBannerDisplay(BaseUnitTest):
             }
 
             # Test version formatting
-            version_display = f"AskAI CLI v{version_info['version']}"
+            version_display = f"Ask AI v{version_info['version']}"
 
             self.assert_true(
                 version_info["version"] in version_display,

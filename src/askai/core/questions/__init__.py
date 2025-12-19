@@ -1,5 +1,5 @@
 """
-Question processing module for the AskAI CLI.
+Question processing module for Ask AI.
 Handles standalone question processing and formatting.
 """
 

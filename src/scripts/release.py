@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Release management script for AskAI CLI.
+Release management script for Ask AI.
 
 Handles creating releases with automated changelog generation,
 git tagging, and semantic versioning.
@@ -156,7 +156,7 @@ def create_release(version, release_notes=None):
 def main():
     # pylint: disable=too-many-locals
     """Main function for creating releases."""
-    parser = argparse.ArgumentParser(description="Create release for AskAI CLI")
+    parser = argparse.ArgumentParser(description="Create release for Ask AI")
     parser.add_argument('--version', help='Version to release (default: current version)')
     parser.add_argument('--notes', help='Release notes file')
     parser.add_argument('--auto-changelog', action='store_true',

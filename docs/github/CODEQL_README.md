@@ -6,7 +6,7 @@ This directory contains documentation about CodeQL security analysis for the ask
 
 ## Expected CodeQL Warnings (False Positives)
 
-CodeQL reports 7 path injection warnings (`py/path-injection`). These are **expected false positives** for a CLI application.
+CodeQL reports 7 path injection warnings (`py/path-injection`). These are **expected false positives** for this application.
 
 **📄 See [FALSE_POSITIVES.md](./FALSE_POSITIVES.md) for detailed documentation.**
 

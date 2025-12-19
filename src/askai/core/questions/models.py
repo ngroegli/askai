@@ -1,5 +1,5 @@
 """
-Question processing models for the AskAI CLI.
+Question processing models for Ask AI.
 Defines data structures for question handling.
 """
 

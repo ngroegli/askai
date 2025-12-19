@@ -1,3 +1,3 @@
 """
-Integration and unit tests for askai-cli.
+Integration and unit tests for askai.
 """

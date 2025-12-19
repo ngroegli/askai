@@ -48,7 +48,7 @@ fi
 echo "==> Setting up alias for askai command..."
 
 ALIAS_CMD="alias askai='$SCRIPT_DIR/askai.sh'"
-ALIAS_COMMENT="# AskAI CLI alias added by install.sh"
+ALIAS_COMMENT="# Ask AI alias added by install.sh"
 
 add_alias_to_shell() {
     local shellrc="$1"

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AskAI CLI Terminal User Interface (TUI) provides a modern, interactive terminal experience built on the [Textual framework](https://textual.textualize.io/). The TUI offers an intuitive alternative to the traditional command-line interface, featuring real-time interaction, visual feedback, and streamlined workflows through a **tabbed interface design**.
+The Ask AI Terminal User Interface (TUI) provides a modern, interactive terminal experience built on the [Textual framework](https://textual.textualize.io/). The TUI offers an intuitive alternative to traditional usage, featuring real-time interaction, visual feedback, and streamlined workflows through a **tabbed interface design**.
 
 ## Architecture Principles
 

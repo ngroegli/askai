@@ -1,6 +1,6 @@
-# AskAI CLI User Manual
+# Ask AI User Manual
 
-This manual provides detailed instructions and advanced usage scenarios for AskAI CLI. For installation and basic examples, see the main README.
+This manual provides detailed instructions and advanced usage scenarios for Ask AI. For installation and basic examples, see the main README.
 
 ## Table of Contents
 1. Getting Started

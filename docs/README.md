@@ -1,6 +1,6 @@
-# AskAI CLI - Documentation
+# Ask AI - Documentation
 
-This directory contains comprehensive architecture, technical, and user documentation for the AskAI CLI project.
+This directory contains comprehensive architecture, technical, and user documentation for the Ask AI project.
 
 ## 📚 Documentation Index
 
@@ -9,7 +9,7 @@ This directory contains comprehensive architecture, technical, and user document
 #### [SOFTWARE_ARCHITECTURE.md](SOFTWARE_ARCHITECTURE.md)
 **High-level system architecture and design documentation**
 
-Comprehensive overview of the AskAI CLI system architecture:
+Comprehensive overview of the Ask AI system architecture:
 - System overview and key features
 - Architecture layers and component responsibilities
 - Design patterns and principles
@@ -65,7 +65,7 @@ Design principles and guidelines for the terminal UI:
 
 Comprehensive guide for end users:
 - Installation and setup
-- Command-line interface usage
+- Command-line usage
 - Pattern system overview
 - Configuration options
 - Examples and tutorials
@@ -261,7 +261,7 @@ Guide to D2 diagrams in the drawings folder:
 
 ## 📋 Project Overview
 
-AskAI CLI is a sophisticated command-line interface application that provides AI-powered assistance through structured patterns and interactive conversations. The system integrates with multiple AI providers through the OpenRouter API and supports various input formats including text, images, PDFs, and URLs.
+Ask AI is a sophisticated application that provides AI-powered assistance through structured patterns and interactive conversations. The system integrates with multiple AI providers through the OpenRouter API and supports various input formats including text, images, PDFs, and URLs.
 
 ### Key Features
 
@@ -276,9 +276,9 @@ AskAI CLI is a sophisticated command-line interface application that provides AI
 ## 🔗 Quick Links
 
 - 📖 [Main README](../README.md) - Setup instructions and usage examples
-- 🐙 [GitHub Repository](https://github.com/ngroegli/askai-cli) - Source code
-- 🐛 [Issues](https://github.com/ngroegli/askai-cli/issues) - Bug reports and feature requests
-- 💡 [Discussions](https://github.com/ngroegli/askai-cli/discussions) - Questions and ideas
+- 🐙 [GitHub Repository](https://github.com/ngroegli/askai) - Source code
+- 🐛 [Issues](https://github.com/ngroegli/askai/issues) - Bug reports and feature requests
+- 💡 [Discussions](https://github.com/ngroegli/askai/discussions) - Questions and ideas
 
 ## 📐 Documentation Standards
 
@@ -389,8 +389,8 @@ docs/
 
 ## 📄 License
 
-This documentation is part of the AskAI CLI project and is subject to the same license as the project.
+This documentation is part of the Ask AI project and is subject to the same license as the project.
 
 ---
 
-*This documentation is actively maintained and reflects the current state of the AskAI CLI project. Last updated: December 2025.*
+*This documentation is actively maintained and reflects the current state of the Ask AI project. Last updated: December 2025.*

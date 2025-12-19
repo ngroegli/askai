@@ -121,12 +121,12 @@ jobs:
 
       - name: Build Docker image for scanning
         run: |
-          docker build -t askai-cli:scan-target .
+          docker build -t askai:scan-target .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "askai-cli:scan-target"
+          image-ref: "askai:scan-target"
           format: "sarif"
           output: "trivy-results.sarif"
 
@@ -139,7 +139,7 @@ jobs:
       - name: Run Trivy for human-readable output
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "askai-cli:scan-target"
+          image-ref: "askai:scan-target"
           format: "table"
 
   codeql-analysis:

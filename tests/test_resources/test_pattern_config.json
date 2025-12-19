@@ -4,7 +4,7 @@
       "name": "data_visualization",
       "description": "Test data visualization pattern with sample data",
       "input": {
-        "csv_file": "/home/nicola/Git/askai-cli/tests/test_resources/test_data.csv",
+        "csv_file": "/home/nicola/Git/askai/tests/test_resources/test_data.csv",
         "chart_type": "bar",
         "title": "Sales Data Visualization",
         "include_3d": "no",
@@ -80,7 +80,7 @@
       "name": "log_interpretation",
       "description": "Test log interpretation pattern",
       "input": {
-        "log_file": "/home/nicola/Git/askai-cli/tests/test_resources/test.log",
+        "log_file": "/home/nicola/Git/askai/tests/test_resources/test.log",
         "analysis_depth": "detailed",
         "include_recommendations": true,
         "focus_areas": "errors, performance, security"

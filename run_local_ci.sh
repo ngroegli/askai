@@ -7,7 +7,7 @@
 # Note: We don't use 'set -e' here because we need to handle Pylint's
 # non-zero exit codes properly before deciding whether to exit
 
-echo "🔧 Running Local CI Checks for askai-cli"
+echo "🔧 Running Local CI Checks for askai"
 echo "=========================================="
 
 # Colors for output
@@ -36,7 +36,7 @@ print_error() {
 
 # Check if we're in the right directory
 if [ ! -f "pyproject.toml" ] || [ ! -d "src" ]; then
-    print_error "Please run this script from the askai-cli project root directory"
+    print_error "Please run this script from the askai project root directory"
     exit 1
 fi
 

@@ -1,5 +1,5 @@
 """
-Patterns package for AskAI CLI.
+Patterns package for Ask AI.
 
 This package implements the pattern system for configuring AI prompts,
 managing inputs and outputs, and specialized use cases through predefined templates.

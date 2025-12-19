@@ -1,5 +1,5 @@
 """
-Core business logic for AskAI CLI.
+Core business logic for Ask AI.
 
 This package contains the main business logic components organized by functionality:
 - ai: AI service integration and clients

@@ -60,5 +60,5 @@ Thumbs.db
 run_*.sh
 install.sh
 askai.sh
-askai-cli.code-workspace
+askai.code-workspace
 Makefile
