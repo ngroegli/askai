@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "askai"
-version = "1.3.0"
+version = "1.3.1-dev"
 description = "AI-powered tool for intelligent question processing and pattern management"
 authors = [{name = "AskAI Team", email = "info@askai.com"}]
 license = {text = "MIT"}
