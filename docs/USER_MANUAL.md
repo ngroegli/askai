@@ -18,7 +18,7 @@ This manual provides detailed instructions and advanced usage scenarios for AskA
 
 ## 1. Getting Started
 
-After installation, configure your API key and preferred models in `~/.askai_config.yml`. See the README for setup instructions.
+After installation, configure your API key and preferred models in `~/.askai/config.yml`. See the README for setup instructions.
 
 ## 2. Configuration
 
