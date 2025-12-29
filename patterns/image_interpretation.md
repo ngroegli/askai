@@ -1,5 +1,7 @@
 # Pattern: Image Interpretation
 
+**Tags:** `content`, `analysis`, `research`
+
 ## Purpose
 
 The purpose of `image_interpretation` is to analyze and provide detailed descriptions of images from either local file paths or web URLs. This system helps users understand image content without needing visual access, supports accessibility needs, and extracts meaningful information from visual data.

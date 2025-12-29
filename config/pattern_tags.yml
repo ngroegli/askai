@@ -1,0 +1,88 @@
+# Pattern Tags Configuration
+#
+# This file defines the available tags for categorizing patterns.
+# Tags are used for filtering patterns with -lp, -vp, and -up commands.
+#
+# Tag Categories:
+# - domain: The problem domain or field of application
+# - type: The type of task or operation
+# - use_case: Common use cases or scenarios
+
+tags:
+  # Domain Tags
+  domain:
+    - id: data-analysis
+      name: Data Analysis
+      description: Working with data, statistics, and analytics
+
+    - id: security
+      name: Security
+      description: Security operations, threat detection, and analysis
+
+    - id: development
+      name: Development
+      description: Software development and coding tasks
+
+    - id: documentation
+      name: Documentation
+      description: Creating or processing documentation
+
+    - id: content
+      name: Content
+      description: Content creation, editing, and summarization
+
+    - id: market-research
+      name: Market Research
+      description: Market analysis and competitive intelligence
+
+    - id: operations
+      name: Operations
+      description: IT operations and system administration
+
+  # Type Tags
+  type:
+    - id: generation
+      name: Generation
+      description: Creating new content or code
+
+    - id: analysis
+      name: Analysis
+      description: Analyzing and interpreting information
+
+    - id: transformation
+      name: Transformation
+      description: Converting between formats or structures
+
+    - id: summarization
+      name: Summarization
+      description: Condensing information into summaries
+
+    - id: visualization
+      name: Visualization
+      description: Creating visual representations
+
+  # Use Case Tags
+  use_case:
+    - id: troubleshooting
+      name: Troubleshooting
+      description: Debugging and problem-solving
+
+    - id: reporting
+      name: Reporting
+      description: Creating reports and summaries
+
+    - id: automation
+      name: Automation
+      description: Automating tasks and workflows
+
+    - id: research
+      name: Research
+      description: Information gathering and research
+
+    - id: monitoring
+      name: Monitoring
+      description: System and application monitoring
+
+    - id: web-development
+      name: Web Development
+      description: Creating web pages and applications

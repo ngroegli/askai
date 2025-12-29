@@ -78,7 +78,7 @@ class CLIParser:
         pattern_group.add_argument(
             '-up', '--use-pattern',
             nargs='?',
-            const='new',  # When -p is used without value
+            const='',  # When -up is used without value
             metavar='PATTERN_ID',
             help='Use a predefined pattern. Without ID, select from available patterns (incompatible with chat)'
         )
@@ -88,10 +88,18 @@ class CLIParser:
         pattern_group.add_argument('-vp', '--view-pattern',
                            nargs='?',
                            const='',  # When -vp is used without value
+                           metavar='PATTERN_ID',
                            help='View pattern content. Use without ID to select from available patterns')
         pattern_group.add_argument('-pi', '--pattern-input',
                            type=json.loads,
                            help='Provide pattern inputs as JSON object (used with --use-pattern)')
+        pattern_group.add_argument('--tag',
+                           action='append',
+                           metavar='TAG',
+                           help='Filter patterns by tag (can be used multiple times for AND logic, only with -up/-lp/-vp)')
+        pattern_group.add_argument('--list-tags',
+                           action='store_true',
+                           help='List all available pattern tags')
 
         # Provider-specific options
         provider_group = parser.add_argument_group('Provider internals')
@@ -152,10 +160,25 @@ class CLIParser:
         has_pdf_url = args.pdf_url is not None
 
         # Check if pattern is being used
+        # Note: use_pattern is None if -up not used, empty string if -up used with no args, or string with pattern_id
         using_pattern = args.use_pattern is not None
+
+        # Check if any pattern-related command is being used
+        using_pattern_commands = (args.list_patterns or args.view_pattern is not None or
+                                 using_pattern or getattr(args, 'list_tags', False))
 
         # Check if chat persistence is being used
         using_chat = args.persistent_chat is not None or args.view_chat is not None
+
+        # Validate --tag is only used with pattern commands
+        if args.tag and not using_pattern_commands:
+            logger.error(json.dumps({
+                "log_message": "User provided --tag without pattern commands"
+            }))
+            print_error_or_warnings(
+                "--tag can only be used with pattern commands (-up, -lp, -vp, --list-tags)"
+            )
+            sys.exit(1)
 
         # Check for incompatible combinations of pattern and chat
         if using_pattern and using_chat:
@@ -182,7 +205,7 @@ class CLIParser:
                 is_warning=True, exit_on_error=False
             )
 
-        if not (args.question or args.use_pattern or has_command or
+        if not (args.question or using_pattern or has_command or
                 has_url or has_image or has_pdf or has_image_url or has_pdf_url):
             logger.error(json.dumps({
                 "log_message": (

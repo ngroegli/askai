@@ -216,13 +216,15 @@ class TestCommandHandler(BaseUnitTest):
                     'pattern_id': 'pattern1',
                     'name': 'Test Pattern 1',
                     'source': 'built-in',
-                    'is_private': False
+                    'is_private': False,
+                    'tags': []
                 },
                 {
                     'pattern_id': 'pattern2',
                     'name': 'Test Pattern 2',
                     'source': 'built-in',
-                    'is_private': False
+                    'is_private': False,
+                    'tags': []
                 }
             ]
 
@@ -232,6 +234,8 @@ class TestCommandHandler(BaseUnitTest):
             mock_args = Mock()
             mock_args.list_patterns = True
             mock_args.view_pattern = None
+            mock_args.tag = None  # Explicitly set tag to None to avoid Mock auto-creation
+            mock_args.list_tags = False  # Explicitly set list_tags to False
 
             # Add attributes that might be accessed during command processing
             mock_args.get = Mock(return_value=None)

@@ -1,5 +1,7 @@
 # Pattern: KQL Query Generation
 
+**Tags:** `security`, `generation`, `monitoring`
+
 ## Purpose
 
 This system takes natural language input and generates corresponding Kusto Query Language (KQL) queries. It does not execute the queries or return data results — it simply converts user questions into valid KQL syntax.

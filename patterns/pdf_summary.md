@@ -1,5 +1,7 @@
 # Pattern: PDF Summary
 
+**Tags:** `documentation`, `summarization`, `research`
+
 ## Purpose
 
 The purpose of `pdf_summary` is to extract and summarize key information from PDF documents accessible via local file paths or web URLs. This system helps users quickly understand the core content and important points of PDF documents without needing to read through the entire text.
@@ -64,10 +66,10 @@ results:
     required: true
     example: |
       # PDF Summary: Climate Change Effects on Coastal Ecosystems
-      
+
       ## Executive Summary
       This research paper examines the effects of climate change on coastal ecosystems between 2010-2020. The authors analyzed data from 50 monitoring stations across three continents and found significant changes in biodiversity, water temperature, and acidification levels. The study concludes that immediate conservation efforts are needed, particularly in tropical regions where degradation is occurring 2.5 times faster than previously estimated.
-      
+
       ## Key Points
       * Study covered 50 coastal monitoring stations across North America, Europe, and Australia
       * Average water temperature increased by 1.2°C over the decade studied
@@ -77,7 +79,7 @@ results:
       * Economic impact estimated at $3.8 billion annually to coastal economies
       * Recommended conservation strategy would cost $450 million to implement
       * Without intervention, 38% of studied ecosystems face critical damage by 2030
-      
+
       ## Document Structure
       1. **Executive Summary** (pp. 1-2)
       2. **Introduction and Background** (pp. 3-7)
@@ -90,13 +92,13 @@ results:
       6. **Recommendations** (pp. 47-50)
       7. **References** (pp. 51-58)
       8. **Appendices** (pp. 59-73)
-      
+
       ## Key Figures and Tables
-      
+
       ### Figure 1 (p. 17)
       **Caption**: "Global Temperature Increases in Coastal Waters 2010-2020"
       **Key Insight**: Shows accelerating warming trends with regional variations
-      
+
       ### Table 3 (p. 25)
       **Title**: "Species Diversity Changes by Region"
       **Key Data**: Provides percentage changes in biodiversity across different ecosystems
@@ -110,24 +112,24 @@ model:
   model_name: anthropic/claude-3.5-sonnet
   temperature: 0.1
   max_tokens: 2500
-  
+
 format_instructions: |
   ⚠️⚠️⚠️ CRITICAL OUTPUT FORMAT INSTRUCTIONS ⚠️⚠️⚠️
-  
+
   Your response MUST follow this EXACT structure:
-  
+
   {
     "results": {
       "detailed_analysis": "Your markdown content here"
     }
   }
-  
+
   CRITICAL REQUIREMENTS:
   1. Return ONLY the raw JSON as shown above - nothing else
   2. DO NOT wrap your response in code blocks or triple backticks
   3. DO NOT include any explanation text before or after the JSON
   4. The "detailed_analysis" field must contain markdown-formatted text
   5. The JSON must be properly formatted and valid
-  
+
   This is the most important instruction: DO NOT USE ```json or ``` around your response.
 ```

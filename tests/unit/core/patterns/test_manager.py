@@ -557,3 +557,376 @@ Basic prompt without proper structure.
 
         except Exception as e:
             self.add_result("error_handling_test_error", False, f"Error handling test failed: {e}")
+
+
+class TestPatternManagerTags(BaseUnitTest):
+    """Test PatternManager tag functionality."""
+
+    def run(self):
+        """Run all tag-related tests."""
+        self.test_tag_parsing()
+        self.test_tag_filtering_single()
+        self.test_tag_filtering_and_logic()
+        self.test_get_all_tags()
+        self.test_get_tags_for_pattern()
+        return self.results
+
+    def test_tag_parsing(self):
+        """Test parsing tags from pattern files."""
+        try:
+            test_patterns_dir = "/tmp/test-patterns"
+
+            # Pattern with tags
+            pattern_with_tags = """# Pattern: Test Pattern
+
+**Tags:** `security`, `analysis`, `monitoring`
+
+## Purpose
+Test pattern with tags.
+"""
+
+            def mock_exists(path):
+                return 'patterns' in path or 'config' in path
+
+            def mock_isdir(path):
+                return 'patterns' in path
+
+            def mock_listdir(path):
+                if 'patterns' in path:
+                    return ['test_pattern.md']
+                return []
+
+            with patch('os.path.exists', side_effect=mock_exists), \
+                 patch('os.path.isdir', side_effect=mock_isdir), \
+                 patch('os.listdir', side_effect=mock_listdir), \
+                 patch('builtins.open', mock_open(read_data=pattern_with_tags)):
+
+                pattern_manager = PatternManager(test_patterns_dir)
+                patterns = pattern_manager.list_patterns()
+
+                self.assert_true(
+                    len(patterns) > 0,
+                    "tag_parsing_patterns_found",
+                    "Patterns with tags are found"
+                )
+
+                if patterns:
+                    pattern = patterns[0]
+                    self.assert_in(
+                        'tags',
+                        pattern,
+                        "tag_parsing_tags_key",
+                        "Pattern has 'tags' key"
+                    )
+
+                    tags = pattern.get('tags', [])
+                    self.assert_equal(
+                        len(tags),
+                        3,
+                        "tag_parsing_count",
+                        "Parsed correct number of tags"
+                    )
+
+                    self.assert_in(
+                        'security',
+                        tags,
+                        "tag_parsing_security",
+                        "Security tag parsed"
+                    )
+
+                    self.assert_in(
+                        'analysis',
+                        tags,
+                        "tag_parsing_analysis",
+                        "Analysis tag parsed"
+                    )
+
+        except Exception as e:
+            self.add_result("tag_parsing_error", False, f"Tag parsing failed: {e}")
+
+    def test_tag_filtering_single(self):
+        """Test filtering patterns by a single tag."""
+        try:
+            test_patterns_dir = "/tmp/test-patterns"
+
+            pattern1 = """# Pattern: Security Pattern
+
+**Tags:** `security`, `monitoring`
+
+## Purpose
+Security pattern.
+"""
+
+            pattern2 = """# Pattern: Analysis Pattern
+
+**Tags:** `analysis`, `reporting`
+
+## Purpose
+Analysis pattern.
+"""
+
+            file_contents = {
+                'security_pattern.md': pattern1,
+                'analysis_pattern.md': pattern2
+            }
+
+            def mock_exists(path):
+                return 'patterns' in path or 'config' in path
+
+            def mock_isdir(path):
+                return 'patterns' in path
+
+            def mock_listdir(path):
+                if 'patterns' in path:
+                    return list(file_contents.keys())
+                return []
+
+            def mock_open_file(path, *args, **kwargs):
+                filename = os.path.basename(path)
+                if filename in file_contents:
+                    return mock_open(read_data=file_contents[filename])()
+                return mock_open(read_data="")()
+
+            with patch('os.path.exists', side_effect=mock_exists), \
+                 patch('os.path.isdir', side_effect=mock_isdir), \
+                 patch('os.listdir', side_effect=mock_listdir), \
+                 patch('builtins.open', side_effect=mock_open_file):
+
+                pattern_manager = PatternManager(test_patterns_dir)
+
+                # Filter by security tag
+                security_patterns = pattern_manager.list_patterns(tags=['security'])
+
+                self.assert_equal(
+                    len(security_patterns),
+                    1,
+                    "tag_filter_single_count",
+                    "Single tag filter returns correct count"
+                )
+
+                if security_patterns:
+                    self.assert_in(
+                        'security',
+                        security_patterns[0].get('tags', []),
+                        "tag_filter_single_has_tag",
+                        "Filtered pattern has the requested tag"
+                    )
+
+        except Exception as e:
+            self.add_result("tag_filtering_single_error", False, f"Single tag filtering failed: {e}")
+
+    def test_tag_filtering_and_logic(self):
+        """Test filtering patterns with AND logic (multiple tags)."""
+        try:
+            test_patterns_dir = "/tmp/test-patterns"
+
+            pattern1 = """# Pattern: Security Monitoring
+
+**Tags:** `security`, `monitoring`, `analysis`
+
+## Purpose
+Security monitoring pattern.
+"""
+
+            pattern2 = """# Pattern: Security Analysis
+
+**Tags:** `security`, `analysis`
+
+## Purpose
+Security analysis pattern.
+"""
+
+            pattern3 = """# Pattern: Data Analysis
+
+**Tags:** `analysis`, `reporting`
+
+## Purpose
+Data analysis pattern.
+"""
+
+            file_contents = {
+                'sec_monitoring.md': pattern1,
+                'sec_analysis.md': pattern2,
+                'data_analysis.md': pattern3
+            }
+
+            def mock_exists(path):
+                return 'patterns' in path or 'config' in path
+
+            def mock_isdir(path):
+                return 'patterns' in path
+
+            def mock_listdir(path):
+                if 'patterns' in path:
+                    return list(file_contents.keys())
+                return []
+
+            def mock_open_file(path, *args, **kwargs):
+                filename = os.path.basename(path)
+                if filename in file_contents:
+                    return mock_open(read_data=file_contents[filename])()
+                return mock_open(read_data="")()
+
+            with patch('os.path.exists', side_effect=mock_exists), \
+                 patch('os.path.isdir', side_effect=mock_isdir), \
+                 patch('os.listdir', side_effect=mock_listdir), \
+                 patch('builtins.open', side_effect=mock_open_file):
+
+                pattern_manager = PatternManager(test_patterns_dir)
+
+                # Filter by security AND analysis (should match 2 patterns)
+                filtered = pattern_manager.list_patterns(tags=['security', 'analysis'])
+
+                self.assert_equal(
+                    len(filtered),
+                    2,
+                    "tag_filter_and_count",
+                    "AND logic filters correctly"
+                )
+
+                # Verify all returned patterns have both tags
+                for pattern in filtered:
+                    tags = pattern.get('tags', [])
+                    self.assert_in(
+                        'security',
+                        tags,
+                        f"tag_filter_and_has_security_{pattern['pattern_id']}",
+                        "Pattern has security tag"
+                    )
+                    self.assert_in(
+                        'analysis',
+                        tags,
+                        f"tag_filter_and_has_analysis_{pattern['pattern_id']}",
+                        "Pattern has analysis tag"
+                    )
+
+                # Filter by security AND monitoring (should match 1 pattern)
+                filtered_strict = pattern_manager.list_patterns(tags=['security', 'monitoring'])
+
+                self.assert_equal(
+                    len(filtered_strict),
+                    1,
+                    "tag_filter_and_strict_count",
+                    "AND logic with 2 tags filters to 1 pattern"
+                )
+
+        except Exception as e:
+            self.add_result("tag_filtering_and_error", False, f"AND tag filtering failed: {e}")
+
+    def test_get_all_tags(self):
+        """Test retrieving all available tags from configuration."""
+        try:
+            test_patterns_dir = "/tmp/test-patterns"
+
+            tags_yaml = """domain:
+  - id: security
+    name: Security
+    description: Security operations
+  - id: analysis
+    name: Analysis
+    description: Data analysis
+
+type:
+  - id: generation
+    name: Generation
+    description: Content generation
+"""
+
+            def mock_exists(path):
+                return True
+
+            def mock_isdir(path):
+                return 'patterns' in path
+
+            def mock_open_file(path, *args, **kwargs):
+                if 'pattern_tags.yml' in path or 'tags.yml' in path:
+                    return mock_open(read_data=tags_yaml)()
+                return mock_open(read_data="")()
+
+            with patch('os.path.exists', side_effect=mock_exists), \
+                 patch('os.path.isdir', side_effect=mock_isdir), \
+                 patch('builtins.open', side_effect=mock_open_file):
+
+                pattern_manager = PatternManager(test_patterns_dir)
+                all_tags = pattern_manager.get_all_tags()
+
+                self.assert_not_none(
+                    all_tags,
+                    "get_all_tags_not_none",
+                    "get_all_tags returns data"
+                )
+
+                if all_tags:
+                    self.assert_in(
+                        'domain',
+                        all_tags,
+                        "get_all_tags_has_domain",
+                        "Tags include domain category"
+                    )
+
+                    if 'domain' in all_tags:
+                        domain_tags = all_tags['domain']
+                        self.assert_true(
+                            len(domain_tags) >= 2,
+                            "get_all_tags_domain_count",
+                            "Domain has multiple tags"
+                        )
+
+        except Exception as e:
+            self.add_result("get_all_tags_error", False, f"get_all_tags failed: {e}")
+
+    def test_get_tags_for_pattern(self):
+        """Test getting tags for a specific pattern."""
+        try:
+            test_patterns_dir = "/tmp/test-patterns"
+
+            pattern_content = """# Pattern: Test Pattern
+
+**Tags:** `security`, `monitoring`, `analysis`
+
+## Purpose
+Test pattern.
+"""
+
+            def mock_exists(path):
+                return 'patterns' in path
+
+            def mock_isdir(path):
+                return 'patterns' in path
+
+            def mock_listdir(path):
+                if 'patterns' in path:
+                    return ['test_pattern.md']
+                return []
+
+            with patch('os.path.exists', side_effect=mock_exists), \
+                 patch('os.path.isdir', side_effect=mock_isdir), \
+                 patch('os.listdir', side_effect=mock_listdir), \
+                 patch('builtins.open', mock_open(read_data=pattern_content)):
+
+                pattern_manager = PatternManager(test_patterns_dir)
+                tags = pattern_manager.get_tags_for_pattern('test_pattern')
+
+                self.assert_not_none(
+                    tags,
+                    "get_tags_for_pattern_not_none",
+                    "Returns tags for pattern"
+                )
+
+                self.assert_equal(
+                    len(tags),
+                    3,
+                    "get_tags_for_pattern_count",
+                    "Returns correct number of tags"
+                )
+
+                self.assert_in(
+                    'security',
+                    tags,
+                    "get_tags_for_pattern_has_security",
+                    "Pattern has security tag"
+                )
+
+        except Exception as e:
+            self.add_result("get_tags_for_pattern_error", False, f"get_tags_for_pattern failed: {e}")
+

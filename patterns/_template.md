@@ -1,5 +1,14 @@
 # Pattern: <TITLE>
 
+**Tags:** `domain-tag`, `type-tag`, `use-case-tag`
+
+<!--
+Available tags can be found in config/pattern_tags.yml:
+- domain: data-analysis, security, development, documentation, content, market-research, operations
+- type: generation, analysis, transformation, summarization, visualization
+- use_case: troubleshooting, reporting, automation, research, monitoring, web-development
+-->
+
 # ========================================
 # PROMPT CONTENT - PROVIDED TO AI DIRECTLY
 # ========================================
@@ -87,16 +96,16 @@ results:
     group: visual_presentation
     example: |
       # Results
-      
+
       ## Primary Output
       ```
       This is the direct result in plain text format
       ```
-      
+
       ## Additional Information
       * Point 1
       * Point 2
-      
+
       ## Visualization
       ```mermaid
       graph TD

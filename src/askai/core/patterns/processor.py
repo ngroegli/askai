@@ -45,11 +45,23 @@ class PatternProcessor:
             Tuple of (formatted_output, created_files, output_handler) or None if cancelled
             The output_handler should have execute_pending_operations() called AFTER displaying formatted_output
         """
+        # Get pattern_id from args (could be None, empty string, or pattern_id)
+        # Empty string means -up was used without pattern_id (need selection)
+        # Use special marker 'SELECT' to indicate selection is needed
+        if args.use_pattern == '':
+            pattern_id = 'SELECT'  # Special marker for selection needed
+        else:
+            pattern_id = args.use_pattern if args.use_pattern else None
+
+        # Get tags from --tag parameter
+        filter_tags = args.tag if hasattr(args, 'tag') and args.tag else None
+
         # Build messages for pattern
         messages, resolved_pattern_id = self.message_builder.build_messages(
             question=None,
             file_input=None,
-            pattern_id=args.use_pattern,
+            pattern_id=pattern_id,
+            pattern_tags=filter_tags,
             pattern_input=args.pattern_input,
             response_format="rawtext",
             url=None,

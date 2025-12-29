@@ -1,5 +1,7 @@
 # Pattern: SPL Query Generation
 
+**Tags:** `security`, `generation`, `monitoring`
+
 ## Purpose
 
 This system takes natural language input and generates corresponding Splunk Search Processing Language (SPL) queries. It does not execute the queries or return live data — it solely translates user questions into valid SPL syntax.
@@ -49,28 +51,28 @@ results:
     required: true
     example: |
       # SPL Query Solutions
-      
+
       ## Primary Query
       ```spl
       index=* sourcetype=* login failed OR failure earliest=-24h | stats count by user, src_ip | sort -count
       ```
-      
+
       ### Explanation
       Statistical analysis showing top users and source IPs with failed logins
-      
+
       ### Data Sources
       - **Indexes**: security, auth
       - **Sourcetypes**: auth*, security*
       - **Key Fields**: user, src_ip
-      
+
       ## Alternative Query
       ```spl
       index=* sourcetype=* login failed OR failure earliest=-24h | table _time user src_ip status
       ```
-      
+
       ### Explanation
       Basic search showing all failed logins with key fields in the last 24 hours
-      
+
       ## Query Flow - Statistical Analysis
       ```mermaid
       graph TD

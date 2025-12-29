@@ -38,6 +38,8 @@ class PatternManager:
             base_path: Base path of the application
             config: Application configuration dictionary
         """
+        self.base_path = base_path
+
         # Built-in patterns directory
         self.patterns_dir = os.path.join(base_path, "patterns")
         if not os.path.isdir(self.patterns_dir):
@@ -45,6 +47,28 @@ class PatternManager:
 
         # Private patterns directory (optional)
         self.private_patterns_dir = self._initialize_private_patterns_dir(config)
+
+        # Load tag definitions
+        self.tag_definitions = self._load_tag_definitions()
+
+    def _load_tag_definitions(self) -> Dict[str, Any]:
+        """Load tag definitions from pattern_tags.yml file.
+
+        Returns:
+            Dict[str, Any]: Tag definitions organized by category
+        """
+        tags_file = os.path.join(self.base_path, "config", "pattern_tags.yml")
+        if not os.path.exists(tags_file):
+            logger.warning("Tags definition file not found: %s", tags_file)
+            return {}
+
+        try:
+            with open(tags_file, 'r', encoding='utf-8') as f:
+                tag_data = yaml.safe_load(f)
+                return tag_data.get('tags', {})
+        except Exception as e:
+            logger.error("Error loading tag definitions: %s", str(e))
+            return {}
 
     def _initialize_private_patterns_dir(self, config: Optional[Dict]) -> Optional[str]:
         """Initialize private patterns directory from config."""
@@ -101,8 +125,11 @@ class PatternManager:
         directories.append(self.patterns_dir)
         return directories
 
-    def list_patterns(self) -> List[Dict[str, Any]]:
+    def list_patterns(self, tags: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """List all available pattern files from all directories.
+
+        Args:
+            tags: Optional list of tags to filter patterns by
 
         Returns:
             List[Dict[str, Any]]: List of pattern metadata
@@ -126,10 +153,22 @@ class PatternManager:
                     file_path = os.path.join(patterns_dir, filename)
 
                     try:
-                        # Read first line of the file to get the pattern name
+                        # Read first few lines of the file to get name and tags
                         with open(file_path, 'r', encoding='utf-8') as f:
                             first_line = f.readline().strip()
                             name = first_line.replace('# Pattern:', '').strip()
+
+                            # Try to read tags - they might be on line 2 or 3 (with blank line)
+                            pattern_tags = []
+                            for _ in range(3):  # Check next 3 lines for tags
+                                line = f.readline().strip()
+                                if line.startswith('**Tags:**'):
+                                    pattern_tags = self._parse_tags_from_line(line)
+                                    break
+
+                        # Filter by tags if specified (AND logic - pattern must have ALL specified tags)
+                        if tags and not all(tag in pattern_tags for tag in tags):
+                            continue
 
                         # Determine if this is a private or built-in pattern
                         is_private = patterns_dir == self.private_patterns_dir
@@ -139,7 +178,8 @@ class PatternManager:
                             'name': name,
                             'file_path': file_path,
                             'is_private': is_private,
-                            'source': 'private' if is_private else 'built-in'
+                            'source': 'private' if is_private else 'built-in',
+                            'tags': pattern_tags
                         })
 
                         seen_pattern_ids.add(pattern_id)
@@ -148,6 +188,63 @@ class PatternManager:
                         logger.warning("Error reading pattern file %s: %s", file_path, str(e))
 
         return sorted(patterns, key=lambda x: x['name'])
+
+    def _parse_tags_from_line(self, line: str) -> List[str]:
+        """Parse tags from a markdown line.
+
+        Expected format: **Tags:** `tag1`, `tag2`, `tag3`
+
+        Args:
+            line: The line to parse
+
+        Returns:
+            List[str]: List of tags found
+        """
+        tags = []
+        if line.startswith('**Tags:**'):
+            # Extract content after **Tags:**
+            tags_content = line.replace('**Tags:**', '').strip()
+            # Extract tags from backticks
+            import re
+            tags = re.findall(r'`([^`]+)`', tags_content)
+        return tags
+
+    def get_all_tags(self) -> Dict[str, List[Dict[str, str]]]:
+        """Get all available tags organized by category.
+
+        Returns:
+            Dict[str, List[Dict[str, str]]]: Tag definitions by category
+        """
+        return self.tag_definitions
+
+    def get_tags_for_pattern(self, pattern_id: str) -> List[str]:
+        """Get tags for a specific pattern.
+
+        Args:
+            pattern_id: The pattern identifier
+
+        Returns:
+            List[str]: List of tags for the pattern
+        """
+        # Search in priority order (private first, then built-in)
+        for patterns_dir in self._get_pattern_directories():
+            safe_pattern_id = os.path.basename(pattern_id).replace('..', '')
+            file_path = os.path.join(patterns_dir, f"{safe_pattern_id}.md")
+
+            if os.path.exists(file_path):
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        f.readline()  # Skip title line
+                        # Try to find tags in next few lines
+                        for _ in range(3):
+                            line = f.readline().strip()
+                            if line.startswith('**Tags:**'):
+                                return self._parse_tags_from_line(line)
+                except Exception as e:
+                    logger.warning("Error reading tags for pattern %s: %s", pattern_id, str(e))
+                    return []
+
+        return []
 
     def _parse_pattern_inputs(self, content: str) -> Tuple[List[PatternInput], List[InputGroup]]:
         # pylint: disable=too-many-locals
@@ -795,21 +892,71 @@ class PatternManager:
         content = self.get_pattern_content(pattern_id)
         if content is None:
             raise ValueError(f"Pattern '{pattern_id}' does not exist")
-        print(content)
 
-    def select_pattern(self) -> Optional[str]:
+        # Display pattern metadata in a user-friendly format
+        print("\n" + "=" * 70)
+        print(f"Pattern: {content['configuration'].purpose.name}")
+        print("=" * 70)
+
+        # Get and display tags
+        tags = self.get_tags_for_pattern(pattern_id)
+        if tags:
+            print(f"\nTags: {', '.join(tags)}")
+
+        print(f"\nID: {pattern_id}")
+        print(f"Source: {content['source']}")
+
+        print("\nDescription:")
+        print(content['configuration'].purpose.description)
+
+        # Display inputs
+        if content['inputs']:
+            print("\nInputs:")
+            for inp in content['inputs']:
+                required_str = " (required)" if inp.required else " (optional)"
+                print(f"  • {inp.name}{required_str}")
+                print(f"    Type: {inp.input_type.value}")
+                print(f"    Description: {inp.description}")
+
+        # Display outputs
+        if content['outputs']:
+            print("\nOutputs:")
+            for out in content['outputs']:
+                print(f"  • {out.name}")
+                print(f"    Type: {out.output_type.value}")
+                print(f"    Description: {out.description}")
+
+        # Display model configuration
+        print("\nModel Configuration:")
+        print(f"  Provider: {content['configuration'].model.provider.value}")
+        print(f"  Model: {content['configuration'].model.model_name}")
+        print(f"  Temperature: {content['configuration'].model.temperature}")
+        print(f"  Max Tokens: {content['configuration'].model.max_tokens}")
+
+        print("\n" + "=" * 70)
+
+    def select_pattern(self, tags: Optional[List[str]] = None) -> Optional[str]:
         """Display an interactive pattern selection menu.
+
+        Args:
+            tags: Optional list of tags to filter patterns by
 
         Returns:
             Optional[str]: Selected pattern ID or None if selection cancelled
         """
-        patterns = self.list_patterns()
+        patterns = self.list_patterns(tags=tags)
 
         if not patterns:
-            print("No pattern files found.")
+            if tags:
+                print(f"No pattern files found matching tags: {', '.join(tags)}")
+            else:
+                print("No pattern files found.")
             return None
 
-        print("\nAvailable patterns:")
+        if tags:
+            print(f"\nPatterns matching tags: {', '.join(tags)}")
+        else:
+            print("\nAvailable patterns:")
         print("-" * 70)
 
         # Display patterns with index
@@ -817,6 +964,8 @@ class PatternManager:
             source_indicator = "🔒" if pattern.get('is_private', False) else "📦"
             print(f"{i}. {pattern['name']} {source_indicator}")
             print(f"   ID: {pattern['pattern_id']} ({pattern.get('source', 'built-in')})")
+            if pattern.get('tags'):
+                print(f"   Tags: {', '.join(pattern['tags'])}")
             print("-" * 70)
 
         print("\nOptions:")

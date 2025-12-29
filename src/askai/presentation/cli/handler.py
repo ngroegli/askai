@@ -73,31 +73,77 @@ class CommandHandler:
 
     def handle_pattern_commands(self, args):
         """Handle pattern-related commands (CLI only, except for interactive mode)."""
-        if not args.list_patterns and args.view_pattern is None:
+        if not args.list_patterns and args.view_pattern is None and not getattr(args, 'list_tags', False):
             return False
 
+        # Handle list tags command
+        if getattr(args, 'list_tags', False):
+            self.logger.info(json.dumps({"log_message": "User requested to list available pattern tags"}))
+
+            tags = self.pattern_manager.get_all_tags()
+            if not tags:
+                print("No tag definitions found.")
+            else:
+                print("\nAvailable Pattern Tags:")
+                print("=" * 70)
+                for category, tag_list in tags.items():
+                    print(f"\n{category.upper().replace('_', ' ')}:")
+                    print("-" * 70)
+                    for tag in tag_list:
+                        print(f"  • {tag['id']} - {tag['name']}")
+                        print(f"    {tag['description']}")
+                print()
+            return True
+
         if args.list_patterns:
-            self.logger.info(json.dumps({"log_message": "User requested to list all available pattern files"}))
+            # Get tags from --tag parameter (safely handle Mock objects and missing attributes)
+            filter_tags = getattr(args, 'tag', None) if (hasattr(args, 'tag') and
+                                                          isinstance(getattr(args, 'tag', None), (list, type(None)))) else None
+
+            if filter_tags:
+                self.logger.info(json.dumps({
+                    "log_message": "User requested to list pattern files with tag filter",
+                    "tags": filter_tags
+                }))
+            else:
+                self.logger.info(json.dumps({"log_message": "User requested to list all available pattern files"}))
 
             # CLI listing only
-            patterns = self.pattern_manager.list_patterns()
+            patterns = self.pattern_manager.list_patterns(tags=filter_tags)
             if not patterns:
-                print("No pattern files found.")
+                if filter_tags:
+                    print(f"No pattern files found matching tags: {', '.join(filter_tags)}")
+                else:
+                    print("No pattern files found.")
             else:
-                print("\nAvailable patterns:")
+                if filter_tags:
+                    print(f"\nPatterns matching tags: {', '.join(filter_tags)}")
+                else:
+                    print("\nAvailable patterns:")
                 print("-" * 70)
                 for pattern in patterns:
                     source_indicator = "🔒" if pattern.get('is_private', False) else "📦"
                     print(f"ID: {pattern['pattern_id']} {source_indicator}")
                     print(f"Name: {pattern['name']}")
                     print(f"Source: {pattern.get('source', 'built-in')}")
+                    if pattern.get('tags'):
+                        print(f"Tags: {', '.join(pattern['tags'])}")
                     print("-" * 70)
                 print("\n🔒 = Private pattern, 📦 = Built-in pattern")
+                print("Use --list-tags to see all available tags")
             return True
 
         if args.view_pattern is not None:  # -vp was used
-            # If no specific pattern ID was provided, show selection
-            pattern_id = args.view_pattern or self.pattern_manager.select_pattern()
+            # Get pattern_id from argument, or empty string if no arg provided
+            pattern_id = args.view_pattern if args.view_pattern else None
+
+            # Get tags from --tag parameter (safely handle Mock objects and missing attributes)
+            filter_tags = getattr(args, 'tag', None) if (hasattr(args, 'tag') and
+                                                          isinstance(getattr(args, 'tag', None), (list, type(None)))) else None
+
+            # If no pattern_id specified, show selection menu (with optional tag filter)
+            if not pattern_id:
+                pattern_id = self.pattern_manager.select_pattern(tags=filter_tags)
 
             if pattern_id is None:
                 print("Pattern selection cancelled.")
@@ -123,7 +169,8 @@ class CommandHandler:
 
         # Check for incompatible combinations
         using_pattern = args.use_pattern is not None
-        using_pattern_commands = args.list_patterns or args.view_pattern is not None or using_pattern
+        using_pattern_commands = (args.list_patterns is not None or args.view_pattern is not None or
+                                 using_pattern or getattr(args, 'list_tags', False))
         using_chat = (args.persistent_chat is not None or args.list_chats or
                      args.view_chat is not None or args.manage_chats)
 

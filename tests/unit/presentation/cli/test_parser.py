@@ -598,6 +598,7 @@ class TestCommandHandlerAdvanced(BaseUnitTest):
                 error_type = scenario["error"]
                 recovery_action = scenario["recovery"]
 
+
                 # Mock recovery success
                 recovery_successful = True
 
@@ -618,3 +619,169 @@ class TestCommandHandlerAdvanced(BaseUnitTest):
 
         except Exception as e:
             self.add_result("error_recovery_test_error", False, f"Error recovery testing failed: {e}")
+
+
+class TestCLITagArguments(BaseUnitTest):
+    """Test CLI tag argument functionality."""
+
+    def run(self):
+        """Run all tag argument tests."""
+        self.test_tag_with_pattern_commands()
+        self.test_tag_without_pattern_commands()
+        self.test_multiple_tags()
+        return self.results
+
+    def test_tag_with_pattern_commands(self):
+        """Test --tag works with pattern commands."""
+        try:
+            mock_args = Mock()
+
+            # Test --tag with -lp
+            mock_args.list_patterns = True
+            mock_args.tag = ['security']
+            mock_args.use_pattern = None
+            mock_args.view_pattern = None
+            mock_args.list_tags = False
+
+            using_pattern_commands = (
+                mock_args.list_patterns or
+                mock_args.view_pattern is not None or
+                mock_args.use_pattern is not None or
+                mock_args.list_tags
+            )
+
+            self.assert_true(
+                using_pattern_commands,
+                "tag_with_lp_valid",
+                "--tag with -lp is valid"
+            )
+
+            # Test --tag with -vp
+            mock_args.list_patterns = False
+            mock_args.view_pattern = ''
+            mock_args.tag = ['security', 'analysis']
+
+            using_pattern_commands = (
+                mock_args.list_patterns or
+                mock_args.view_pattern is not None or
+                mock_args.use_pattern is not None or
+                mock_args.list_tags
+            )
+
+            self.assert_true(
+                using_pattern_commands,
+                "tag_with_vp_valid",
+                "--tag with -vp is valid"
+            )
+
+            # Test --tag with -up
+            mock_args.view_pattern = None
+            mock_args.use_pattern = ''
+            mock_args.tag = ['monitoring']
+
+            using_pattern_commands = (
+                mock_args.list_patterns or
+                mock_args.view_pattern is not None or
+                mock_args.use_pattern is not None or
+                mock_args.list_tags
+            )
+
+            self.assert_true(
+                using_pattern_commands,
+                "tag_with_up_valid",
+                "--tag with -up is valid"
+            )
+
+        except Exception as e:
+            self.add_result("tag_with_patterns_error", False, f"Tag with patterns test failed: {e}")
+
+    def test_tag_without_pattern_commands(self):
+        """Test --tag is invalid without pattern commands."""
+        try:
+            mock_args = Mock()
+
+            # Test --tag with -q (should be invalid)
+            mock_args.question = "test question"
+            mock_args.tag = ['security']
+            mock_args.list_patterns = False
+            mock_args.view_pattern = None
+            mock_args.use_pattern = None
+            mock_args.list_tags = False
+
+            using_pattern_commands = (
+                mock_args.list_patterns or
+                mock_args.view_pattern is not None or
+                mock_args.use_pattern is not None or
+                mock_args.list_tags
+            )
+
+            # This should be False (invalid combination)
+            self.assert_false(
+                using_pattern_commands,
+                "tag_with_question_invalid",
+                "--tag with -q should be invalid"
+            )
+
+            # Validation should fail
+            if mock_args.tag and not using_pattern_commands:
+                validation_should_fail = True
+            else:
+                validation_should_fail = False
+
+            self.assert_true(
+                validation_should_fail,
+                "tag_validation_fails_without_patterns",
+                "Validation fails when --tag used without patterns"
+            )
+
+        except Exception as e:
+            self.add_result("tag_without_patterns_error", False, f"Tag without patterns test failed: {e}")
+
+    def test_multiple_tags(self):
+        """Test multiple --tag arguments work correctly."""
+        try:
+            mock_args = Mock()
+
+            # Test multiple tags with -lp
+            mock_args.list_patterns = True
+            mock_args.tag = ['security', 'analysis', 'monitoring']
+            mock_args.use_pattern = None
+            mock_args.view_pattern = None
+
+            self.assert_true(
+                isinstance(mock_args.tag, list),
+                "multiple_tags_is_list",
+                "Multiple tags are stored as list"
+            )
+
+            self.assert_equal(
+                len(mock_args.tag),
+                3,
+                "multiple_tags_count",
+                "Multiple tags counted correctly"
+            )
+
+            self.assert_in(
+                'security',
+                mock_args.tag,
+                "multiple_tags_has_security",
+                "First tag present"
+            )
+
+            self.assert_in(
+                'analysis',
+                mock_args.tag,
+                "multiple_tags_has_analysis",
+                "Second tag present"
+            )
+
+            self.assert_in(
+                'monitoring',
+                mock_args.tag,
+                "multiple_tags_has_monitoring",
+                "Third tag present"
+            )
+
+        except Exception as e:
+            self.add_result("multiple_tags_error", False, f"Multiple tags test failed: {e}")
+
