@@ -96,7 +96,8 @@ class CLIParser:
         pattern_group.add_argument('--tag',
                            action='append',
                            metavar='TAG',
-                           help='Filter patterns by tag (can be used multiple times for AND logic, only with -up/-lp/-vp)')
+                           help='Filter patterns by tag (can be used multiple times for AND logic, '
+                                'only with -up/-lp/-vp)')
         pattern_group.add_argument('--list-tags',
                            action='store_true',
                            help='List all available pattern tags')

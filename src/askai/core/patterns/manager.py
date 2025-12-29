@@ -8,6 +8,7 @@ and managing the validation and collection of pattern inputs.
 """
 
 import os
+import re
 import logging
 from typing import List, Dict, Any, Optional, Union, Tuple
 import yaml
@@ -205,7 +206,6 @@ class PatternManager:
             # Extract content after **Tags:**
             tags_content = line.replace('**Tags:**', '').strip()
             # Extract tags from backticks
-            import re
             tags = re.findall(r'`([^`]+)`', tags_content)
         return tags
 

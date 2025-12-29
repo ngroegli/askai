@@ -48,7 +48,7 @@ class PatternProcessor:
         # Get pattern_id from args (could be None, empty string, or pattern_id)
         # Empty string means -up was used without pattern_id (need selection)
         # Use special marker 'SELECT' to indicate selection is needed
-        if args.use_pattern == '':
+        if args.use_pattern is not None and not args.use_pattern:
             pattern_id = 'SELECT'  # Special marker for selection needed
         else:
             pattern_id = args.use_pattern if args.use_pattern else None

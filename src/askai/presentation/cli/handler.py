@@ -97,8 +97,10 @@ class CommandHandler:
 
         if args.list_patterns:
             # Get tags from --tag parameter (safely handle Mock objects and missing attributes)
-            filter_tags = getattr(args, 'tag', None) if (hasattr(args, 'tag') and
-                                                          isinstance(getattr(args, 'tag', None), (list, type(None)))) else None
+            filter_tags = (getattr(args, 'tag', None)
+                          if (hasattr(args, 'tag') and
+                              isinstance(getattr(args, 'tag', None), (list, type(None))))
+                          else None)
 
             if filter_tags:
                 self.logger.info(json.dumps({
@@ -138,8 +140,10 @@ class CommandHandler:
             pattern_id = args.view_pattern if args.view_pattern else None
 
             # Get tags from --tag parameter (safely handle Mock objects and missing attributes)
-            filter_tags = getattr(args, 'tag', None) if (hasattr(args, 'tag') and
-                                                          isinstance(getattr(args, 'tag', None), (list, type(None)))) else None
+            filter_tags = (getattr(args, 'tag', None)
+                          if (hasattr(args, 'tag') and
+                              isinstance(getattr(args, 'tag', None), (list, type(None))))
+                          else None)
 
             # If no pattern_id specified, show selection menu (with optional tag filter)
             if not pattern_id:
