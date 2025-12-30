@@ -784,4 +784,3 @@ class TestCLITagArguments(BaseUnitTest):
 
         except Exception as e:
             self.add_result("multiple_tags_error", False, f"Multiple tags test failed: {e}")
-

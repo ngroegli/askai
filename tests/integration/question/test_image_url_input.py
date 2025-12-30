@@ -48,12 +48,17 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "Image URL analysis completed successfully"
+        elif not success:
+            message = f"Image URL analysis failed - Expected content not found: {missing}"
+        else:
+            message = "Image URL analysis failed - command returned error"
+
         self.add_result(
             "image_url_analysis_basic",
             test_success,
-            "Image URL analysis completed successfully" if test_success
-            else f"Image URL analysis failed - Expected content not found: {missing}" if not success
-            else "Image URL analysis failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url}",
                 "content_found": success,
@@ -80,12 +85,17 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "Image URL analysis with query completed successfully"
+        elif not success:
+            message = f"Image URL analysis with query failed - Expected content not found: {missing}"
+        else:
+            message = "Image URL analysis with query failed - command returned error"
+
         self.add_result(
             "image_url_analysis_with_query",
             test_success,
-            "Image URL analysis with query completed successfully" if test_success
-            else f"Image URL analysis with query failed - Expected content not found: {missing}" if not success
-            else "Image URL analysis with query failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url} -q \"{query}\"",
                 "content_found": success,
@@ -115,13 +125,19 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "Image URL analysis with JSON format completed successfully"
+        elif not lorem_success:
+            message = f"Image URL analysis with JSON format failed - Expected content not found: {lorem_missing}"
+        elif not json_valid:
+            message = "Image URL analysis with JSON format failed - invalid JSON format"
+        else:
+            message = "Image URL analysis with JSON format failed - command returned error"
+
         self.add_result(
             "image_url_analysis_with_json",
             test_success,
-            "Image URL analysis with JSON format completed successfully" if test_success
-            else f"Image URL analysis with JSON format failed - Expected content not found: {lorem_missing}" if not lorem_success
-            else "Image URL analysis with JSON format failed - invalid JSON format" if not json_valid
-            else "Image URL analysis with JSON format failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url} -f \"json\"",
                 "content_found": lorem_success,
@@ -150,12 +166,17 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "Image URL analysis with model completed successfully"
+        elif not success:
+            message = f"Image URL analysis with model failed - Expected content not found: {missing}"
+        else:
+            message = "Image URL analysis with model failed - command returned error"
+
         self.add_result(
             "image_url_analysis_with_model",
             test_success,
-            "Image URL analysis with model completed successfully" if test_success
-            else f"Image URL analysis with model failed - Expected content not found: {missing}" if not success
-            else "Image URL analysis with model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url} -m \"{model_name}\"",
                 "content_found": success,
@@ -186,13 +207,19 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "Image URL analysis with query and JSON completed successfully"
+        elif not lorem_success:
+            message = f"Image URL analysis with query and JSON failed - Expected content not found: {lorem_missing}"
+        elif not json_valid:
+            message = "Image URL analysis with query and JSON failed - invalid JSON format"
+        else:
+            message = "Image URL analysis with query and JSON failed - command returned error"
+
         self.add_result(
             "image_url_analysis_with_query_and_json",
             test_success,
-            "Image URL analysis with query and JSON completed successfully" if test_success
-            else f"Image URL analysis with query and JSON failed - Expected content not found: {lorem_missing}" if not lorem_success
-            else "Image URL analysis with query and JSON failed - invalid JSON format" if not json_valid
-            else "Image URL analysis with query and JSON failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url} -q \"{query}\" -f \"json\"",
                 "content_found": lorem_success,
@@ -222,12 +249,17 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "Image URL analysis with query and model completed successfully"
+        elif not success:
+            message = f"Image URL analysis with query and model failed - Expected content not found: {missing}"
+        else:
+            message = "Image URL analysis with query and model failed - command returned error"
+
         self.add_result(
             "image_url_analysis_with_query_and_model",
             test_success,
-            "Image URL analysis with query and model completed successfully" if test_success
-            else f"Image URL analysis with query and model failed - Expected content not found: {missing}" if not success
-            else "Image URL analysis with query and model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url} -q \"{query}\" -m \"{model_name}\"",
                 "content_found": success,
@@ -258,13 +290,19 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "Image URL analysis with JSON and model completed successfully"
+        elif not lorem_success:
+            message = f"Image URL analysis with JSON and model failed - Expected content not found: {lorem_missing}"
+        elif not json_valid:
+            message = "Image URL analysis with JSON and model failed - invalid JSON format"
+        else:
+            message = "Image URL analysis with JSON and model failed - command returned error"
+
         self.add_result(
             "image_url_analysis_with_json_and_model",
             test_success,
-            "Image URL analysis with JSON and model completed successfully" if test_success
-            else f"Image URL analysis with JSON and model failed - Expected content not found: {lorem_missing}" if not lorem_success
-            else "Image URL analysis with JSON and model failed - invalid JSON format" if not json_valid
-            else "Image URL analysis with JSON and model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img-url {test_image_url} -f \"json\" -m \"{model_name}\"",
                 "content_found": lorem_success,
@@ -283,7 +321,16 @@ class TestImageUrlInput(AutomatedTest):
         model_name = "anthropic/claude-3-haiku"
 
         # Run image URL analysis with all options
-        stdout, stderr, return_code = run_cli_command(["-img-url", test_image_url, "-q", query, "-f", "json", "-m", model_name])
+        stdout, stderr, return_code = run_cli_command([
+            "-img-url",
+            test_image_url,
+            "-q",
+            query,
+            "-f",
+            "json",
+            "-m",
+            model_name,
+        ])
 
         # Check if Lorem Ipsum is detected
         expected_patterns = [
@@ -298,22 +345,30 @@ class TestImageUrlInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "Image URL analysis with all options completed successfully"
+        elif not lorem_success:
+            message = f"Image URL analysis with all options failed - Expected content not found: {lorem_missing}"
+        elif not json_valid:
+            message = "Image URL analysis with all options failed - invalid JSON format"
+        else:
+            message = "Image URL analysis with all options failed - command returned error"
+
+        cmd = f"askai.py -img-url {test_image_url} -q \"{query}\" -f \"json\" -m \"{model_name}\""
+
         self.add_result(
             "image_url_analysis_with_all_options",
             test_success,
-            "Image URL analysis with all options completed successfully" if test_success
-            else f"Image URL analysis with all options failed - Expected content not found: {lorem_missing}" if not lorem_success
-            else "Image URL analysis with all options failed - invalid JSON format" if not json_valid
-            else "Image URL analysis with all options failed - command returned error",
+            message,
             {
-                "command": f"askai.py -img-url {test_image_url} -q \"{query}\" -f \"json\" -m \"{model_name}\"",
+                "command": cmd,
                 "content_found": lorem_success,
                 "json_valid": json_valid,
                 "json_reason": json_reason,
                 "stdout": stdout[:500] + ("..." if len(stdout) > 500 else ""),
                 "stderr": stderr if stderr else "No errors",
-                "return_code": return_code
-            }
+                "return_code": return_code,
+            },
         )
 
     def _test_missing_image_url(self):
@@ -322,7 +377,18 @@ class TestImageUrlInput(AutomatedTest):
         stdout, stderr, return_code = run_cli_command(["-img-url"])
 
         # We expect an error return code or error message indicating missing URL
-        has_error = return_code != 0 or "error" in stdout.lower() or "error" in stderr.lower() or "required" in stdout.lower() or "required" in stderr.lower()
+        error_in_stdout = "error" in stdout.lower()
+        error_in_stderr = "error" in stderr.lower()
+        required_in_stdout = "required" in stdout.lower()
+        required_in_stderr = "required" in stderr.lower()
+
+        has_error = (
+            return_code != 0
+            or error_in_stdout
+            or error_in_stderr
+            or required_in_stdout
+            or required_in_stderr
+        )
 
         self.add_result(
             "missing_image_url_handling",

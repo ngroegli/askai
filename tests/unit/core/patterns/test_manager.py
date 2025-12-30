@@ -681,7 +681,7 @@ Analysis pattern.
                     return list(file_contents.keys())
                 return []
 
-            def mock_open_file(path, *args, **kwargs):
+            def mock_open_file(path, *_args, **_kwargs):
                 filename = os.path.basename(path)
                 if filename in file_contents:
                     return mock_open(read_data=file_contents[filename])()
@@ -761,7 +761,7 @@ Data analysis pattern.
                     return list(file_contents.keys())
                 return []
 
-            def mock_open_file(path, *args, **kwargs):
+            def mock_open_file(path, *_args, **_kwargs):
                 filename = os.path.basename(path)
                 if filename in file_contents:
                     return mock_open(read_data=file_contents[filename])()
@@ -832,13 +832,13 @@ type:
     description: Content generation
 """
 
-            def mock_exists(path):
+            def mock_exists(_path):
                 return True
 
             def mock_isdir(path):
                 return 'patterns' in path
 
-            def mock_open_file(path, *args, **kwargs):
+            def mock_open_file(path, *_args, **_kwargs):
                 if 'pattern_tags.yml' in path or 'tags.yml' in path:
                     return mock_open(read_data=tags_yaml)()
                 return mock_open(read_data="")()
@@ -929,4 +929,3 @@ Test pattern.
 
         except Exception as e:
             self.add_result("get_tags_for_pattern_error", False, f"get_tags_for_pattern failed: {e}")
-

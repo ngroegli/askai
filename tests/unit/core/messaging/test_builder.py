@@ -128,11 +128,19 @@ class TestMessageBuilder(BaseUnitTest):
                     "Pattern message creation returns result"
                 )
 
-                self.assert_true(
-                    len(messages) >= 1,
-                    "pattern_message_has_content",
-                    "Pattern messages have content"
-                )
+                # Ensure messages is not None and has at least one entry
+                if messages is None:
+                    self.add_result(
+                        "pattern_message_has_content",
+                        False,
+                        "Pattern messages is None"
+                    )
+                else:
+                    self.assert_true(
+                        len(messages) >= 1,
+                        "pattern_message_has_content",
+                        "Pattern messages have content"
+                    )
 
                 self.assert_equal(
                     test_pattern,
