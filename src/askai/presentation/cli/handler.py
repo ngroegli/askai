@@ -31,8 +31,8 @@ class CommandHandler:
 
         Args:
             args: Parsed command line arguments
-
-        Returns:
+            using_pattern_commands = (args.list_patterns or args.view_pattern is not None or
+                                     using_pattern or getattr(args, 'list_tags', False))
             bool: True if interactive mode was handled
         """
         if not getattr(args, 'interactive', False):
@@ -167,13 +167,14 @@ class CommandHandler:
 
     def handle_chat_commands(self, args):  # pylint: disable=too-many-return-statements,too-many-branches
         """Handle chat-related commands (CLI only, except for interactive mode)."""
+        # Normal chat handling (no debug prints)
         # Check if interactive TUI mode should be used
         if self.handle_interactive_mode(args):
             return True
 
         # Check for incompatible combinations
         using_pattern = args.use_pattern is not None
-        using_pattern_commands = (args.list_patterns is not None or args.view_pattern is not None or
+        using_pattern_commands = (args.list_patterns or args.view_pattern is not None or
                                  using_pattern or getattr(args, 'list_tags', False))
         using_chat = (args.persistent_chat is not None or args.list_chats or
                      args.view_chat is not None or args.manage_chats)

@@ -83,6 +83,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     cli_parser = CLIParser()
     args = cli_parser.parse_arguments()
 
+    # (No debug printing here) proceed with normal initialization
+
     # Now load configuration (needed for most commands)
     config = load_config()
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

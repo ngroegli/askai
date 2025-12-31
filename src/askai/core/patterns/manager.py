@@ -895,7 +895,10 @@ class PatternManager:
 
         # Display pattern metadata in a user-friendly format
         print("\n" + "=" * 70)
+        # Keep a clear header and also show an explicit Name field for compatibility
         print(f"Pattern: {content['configuration'].purpose.name}")
+        # Some consumers/tests expect an explicit 'Name:' label — include it
+        print(f"Name: {content['configuration'].purpose.name}")
         print("=" * 70)
 
         # Get and display tags
