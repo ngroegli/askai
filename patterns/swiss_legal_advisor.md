@@ -1,4 +1,3 @@
-````markdown
 # Pattern: Swiss Legal Advisor
 
 **Tags:** `documentation`, `analysis`, `research`
@@ -193,18 +192,3 @@ model:
   max_tokens: 3000
   custom_parameters: {}
 ```
-
-## Notes and Best Practices
-
-* **Language Support**: Swiss legal texts are available in German, French, and Italian. The pattern should detect the question language and respond accordingly.
-* **Official Sources**: Always reference official sources like fedlex.admin.ch (the Swiss federal legal platform).
-* **Accuracy Critical**: Legal information must be accurate and up-to-date. The model should indicate if it's uncertain or if laws may have changed.
-* **Not Legal Advice**: Always include disclaimers that this is informational guidance, not a substitute for professional legal counsel.
-* **Cantonal vs Federal**: Be clear about whether the answer relates to federal law or cantonal law, as Switzerland has a federal system.
-* **Multiple Jurisdictions**: Some areas (e.g., tax law, administrative law) vary significantly by canton.
-* **Cross-References**: When relevant, reference related articles or provisions that provide additional context.
-* **Plain Language**: Explain legal concepts in accessible language while maintaining legal precision.
-* **Recent Changes**: Note if recent legislative changes might affect the answer.
-* **Practical Application**: Include practical guidance on how the law is typically applied or enforced.
-
-````
