@@ -54,7 +54,9 @@ class TestChatManager(BaseUnitTest):
             )
 
             # Test with custom config
-            custom_config = {"chat": {"storage_path": "/tmp/test_chats", "max_history": 5}}
+            custom_config = {
+                "chat": {"storage_path": os.path.join(tempfile.gettempdir(), "test_chats"), "max_history": 5}
+            }
             custom_chat_manager = ChatManager(custom_config, mock_logger)
 
             self.assert_equal(
@@ -163,7 +165,7 @@ class TestChatManager(BaseUnitTest):
     def test_context_building_logic(self):
         """Test chat context building and message assembly."""
         try:
-            config = {"chat": {"storage_path": "/tmp/test", "max_history": 3}}
+            config = {"chat": {"storage_path": os.path.join(tempfile.gettempdir(), "test"), "max_history": 3}}
             mock_logger = Mock()
             chat_manager = ChatManager(config, mock_logger)
 
@@ -221,7 +223,7 @@ class TestChatManager(BaseUnitTest):
     def test_chat_repair_functionality(self):
         """Test chat repair and recovery functionality."""
         try:
-            config = {"chat": {"storage_path": "/tmp/test", "max_history": 10}}
+            config = {"chat": {"storage_path": os.path.join(tempfile.gettempdir(), "test"), "max_history": 10}}
             mock_logger = Mock()
             chat_manager = ChatManager(config, mock_logger)
 
@@ -271,7 +273,7 @@ class TestChatManager(BaseUnitTest):
     def test_chat_limits_and_cleanup(self):
         """Test chat history limits and cleanup operations."""
         try:
-            config = {"chat": {"storage_path": "/tmp/test", "max_history": 3}}
+            config = {"chat": {"storage_path": os.path.join(tempfile.gettempdir(), "test"), "max_history": 3}}
             mock_logger = Mock()
             chat_manager = ChatManager(config, mock_logger)
 
@@ -354,7 +356,7 @@ class TestChatManager(BaseUnitTest):
                 )
 
             # Test with valid config for other error scenarios
-            valid_config = {"chat": {"storage_path": "/tmp/test", "max_history": 10}}
+            valid_config = {"chat": {"storage_path": os.path.join(tempfile.gettempdir(), "test"), "max_history": 10}}
             chat_manager = ChatManager(valid_config, mock_logger)
 
             # Test file permission errors

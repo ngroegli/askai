@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import Mock, patch, mock_open
 import sys
 import os
+import tempfile
 
 # Add the project root to the path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
@@ -98,14 +99,14 @@ class TestPatternBrowserIntegration(unittest.TestCase):
         self.sample_patterns = [
             {
                 'name': 'test_pattern_1',
-                'path': '/tmp/test1.md',
+                'path': os.path.join(tempfile.gettempdir(), 'test1.md'),
                 'description': 'Test pattern 1',
                 'category': 'built-in',
                 'pattern_id': 'test1'
             },
             {
                 'name': 'test_pattern_2',
-                'path': '/tmp/test2.md',
+                'path': os.path.join(tempfile.gettempdir(), 'test2.md'),
                 'description': 'Test pattern 2',
                 'category': 'private',
                 'pattern_id': 'test2'
@@ -118,15 +119,16 @@ class TestPatternBrowserIntegration(unittest.TestCase):
 
     def test_pattern_item_creation(self):
         """Test PatternItem creation and basic functionality."""
+        test_path = os.path.join(tempfile.gettempdir(), "test.md")
         pattern = PatternItem(
             name="test_pattern",
-            path="/tmp/test.md",
+            path=test_path,
             description="A test pattern",
             category="built-in"
         )
 
         self.assertEqual(pattern.name, "test_pattern")
-        self.assertEqual(pattern.path, "/tmp/test.md")
+        self.assertEqual(pattern.path, test_path)
         self.assertEqual(pattern.description, "A test pattern")
         self.assertEqual(pattern.category, "built-in")
         self.assertIsNone(pattern.content)
@@ -134,7 +136,7 @@ class TestPatternBrowserIntegration(unittest.TestCase):
     def test_pattern_item_load_content_success(self):
         """Test successful content loading."""
         with patch('builtins.open', mock_open(read_data="# Test Pattern\nContent here")):
-            pattern = PatternItem("test", "/tmp/test.md", "desc", "cat")
+            pattern = PatternItem("test", os.path.join(tempfile.gettempdir(), "test.md"), "desc", "cat")
             content = pattern.load_content()
 
             self.assertEqual(content, "# Test Pattern\nContent here")
@@ -154,7 +156,7 @@ class TestPatternBrowserIntegration(unittest.TestCase):
         content = "\n".join([f"Line {i}" for i in range(1, 21)])  # 20 lines
 
         with patch.object(PatternItem, 'load_content', return_value=content):
-            pattern = PatternItem("test", "/tmp/test.md", "desc", "cat")
+            pattern = PatternItem("test", os.path.join(tempfile.gettempdir(), "test.md"), "desc", "cat")
             preview = pattern.get_preview(max_lines=5)
 
             lines = preview.split('\n')
@@ -166,7 +168,7 @@ class TestPatternBrowserIntegration(unittest.TestCase):
         content = "Line 1\nLine 2\nLine 3"
 
         with patch.object(PatternItem, 'load_content', return_value=content):
-            pattern = PatternItem("test", "/tmp/test.md", "desc", "cat")
+            pattern = PatternItem("test", os.path.join(tempfile.gettempdir(), "test.md"), "desc", "cat")
             preview = pattern.get_preview(max_lines=10)
 
             self.assertEqual(preview, content)
@@ -182,7 +184,7 @@ class TestPatternBrowserIntegration(unittest.TestCase):
         self.assertIsInstance(result, PatternItem)
         if result:  # Additional safety check
             self.assertEqual(result.name, 'test_pattern_1')
-            self.assertEqual(result.path, '/tmp/test1.md')
+            self.assertEqual(result.path, os.path.join(tempfile.gettempdir(), 'test1.md'))
             self.assertEqual(result.description, 'Test pattern 1')
 
     @patch('builtins.input')

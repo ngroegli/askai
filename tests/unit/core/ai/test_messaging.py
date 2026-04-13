@@ -3,6 +3,7 @@ Unit tests for AI and messaging functionality.
 """
 import os
 import sys
+import tempfile
 from unittest.mock import Mock, patch, MagicMock
 
 # Setup paths for imports
@@ -29,7 +30,7 @@ sys.modules['askai.utils.config'] = MagicMock()
 mock_config = {
     'openrouter_api_key': 'test-key',
     'model': 'claude-3-sonnet',
-    'askai_dir': '/tmp/test-askai'
+    'askai_dir': os.path.join(tempfile.gettempdir(), 'test-askai')
 }
 
 # Set up the mock to return our test config

@@ -3,6 +3,7 @@ Unit tests for patterns module - comprehensive coverage with realistic scenarios
 """
 import os
 import sys
+import tempfile
 from unittest.mock import patch, mock_open
 
 # Setup paths for imports
@@ -36,7 +37,7 @@ class TestPatternManagerCore(BaseUnitTest):
 
 
             # Test with valid patterns directory
-            test_patterns_dir = "/tmp/test-patterns"
+            test_patterns_dir = os.path.join(tempfile.gettempdir(), "test-patterns")
 
             def mock_exists(path):
                 return 'patterns' in path
@@ -106,7 +107,7 @@ Always follow Python best practices and PEP 8 guidelines.
                  patch('os.path.isdir', return_value=True), \
                  patch('builtins.open', mock_open(read_data=test_pattern_content)):
 
-                pattern_manager = PatternManager("/tmp/test-patterns")
+                pattern_manager = PatternManager(os.path.join(tempfile.gettempdir(), "test-patterns"))
 
                 # Test pattern loading
                 pattern_data = pattern_manager.get_pattern_content("python_expert")
@@ -217,7 +218,7 @@ Focus on finding meaningful patterns and providing actionable recommendations.
                  patch('os.path.isdir', return_value=True), \
                  patch('builtins.open', mock_open(read_data=comprehensive_pattern)):
 
-                pattern_manager = PatternManager("/tmp/test-patterns")
+                pattern_manager = PatternManager(os.path.join(tempfile.gettempdir(), "test-patterns"))
                 pattern_data = pattern_manager.get_pattern_content("analysis")
 
                 if pattern_data:
@@ -301,7 +302,7 @@ Basic prompt without proper structure.
                  patch('os.listdir', return_value=['test_pattern.md']), \
                  patch('os.path.isdir', return_value=True):
 
-                pattern_manager = PatternManager("/tmp/test-patterns")
+                pattern_manager = PatternManager(os.path.join(tempfile.gettempdir(), "test-patterns"))
 
                 # Test input processing
                 test_input_values = {
@@ -372,7 +373,7 @@ Basic prompt without proper structure.
                  patch('os.listdir', return_value=mock_patterns), \
                  patch('os.path.isdir', return_value=True):
 
-                pattern_manager = PatternManager("/tmp/test-patterns")
+                pattern_manager = PatternManager(os.path.join(tempfile.gettempdir(), "test-patterns"))
 
                 # Test list_patterns method
                 if hasattr(pattern_manager, 'list_patterns'):
@@ -472,7 +473,7 @@ Basic prompt without proper structure.
                  patch('os.listdir', return_value=['valid.md']), \
                  patch('os.path.isdir', return_value=True):
 
-                pattern_manager = PatternManager("/tmp/test-patterns")
+                pattern_manager = PatternManager(os.path.join(tempfile.gettempdir(), "test-patterns"))
 
                 # Test loading non-existent pattern - mock the file operations to avoid error messages
                 with patch('builtins.open', side_effect=FileNotFoundError("Pattern not found")):
@@ -574,7 +575,7 @@ class TestPatternManagerTags(BaseUnitTest):
     def test_tag_parsing(self):
         """Test parsing tags from pattern files."""
         try:
-            test_patterns_dir = "/tmp/test-patterns"
+            test_patterns_dir = os.path.join(tempfile.gettempdir(), "test-patterns")
 
             # Pattern with tags
             pattern_with_tags = """# Pattern: Test Pattern
@@ -647,7 +648,7 @@ Test pattern with tags.
     def test_tag_filtering_single(self):
         """Test filtering patterns by a single tag."""
         try:
-            test_patterns_dir = "/tmp/test-patterns"
+            test_patterns_dir = os.path.join(tempfile.gettempdir(), "test-patterns")
 
             pattern1 = """# Pattern: Security Pattern
 
@@ -718,7 +719,7 @@ Analysis pattern.
     def test_tag_filtering_and_logic(self):
         """Test filtering patterns with AND logic (multiple tags)."""
         try:
-            test_patterns_dir = "/tmp/test-patterns"
+            test_patterns_dir = os.path.join(tempfile.gettempdir(), "test-patterns")
 
             pattern1 = """# Pattern: Security Monitoring
 
@@ -816,7 +817,7 @@ Data analysis pattern.
     def test_get_all_tags(self):
         """Test retrieving all available tags from configuration."""
         try:
-            test_patterns_dir = "/tmp/test-patterns"
+            test_patterns_dir = os.path.join(tempfile.gettempdir(), "test-patterns")
 
             tags_yaml = """domain:
   - id: security
@@ -878,7 +879,7 @@ type:
     def test_get_tags_for_pattern(self):
         """Test getting tags for a specific pattern."""
         try:
-            test_patterns_dir = "/tmp/test-patterns"
+            test_patterns_dir = os.path.join(tempfile.gettempdir(), "test-patterns")
 
             pattern_content = """# Pattern: Test Pattern
 
