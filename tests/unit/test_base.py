@@ -1,6 +1,8 @@
 """
 Base classes and utilities for unit tests.
 """
+import os
+import tempfile
 from unittest.mock import Mock
 from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
@@ -69,8 +71,8 @@ class BaseUnitTest(ABC):
         self.mock_config = {
             'openrouter_api_key': 'test-key',
             'model': 'test-model',
-            'askai_dir': '/tmp/test-askai',
-            'patterns_dir': '/tmp/test-patterns'
+            'askai_dir': os.path.join(tempfile.gettempdir(), 'test-askai'),
+            'patterns_dir': os.path.join(tempfile.gettempdir(), 'test-patterns')
         }
 
     @abstractmethod

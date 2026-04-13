@@ -4,6 +4,7 @@ Tests for persistent chat functionality.
 import glob
 import os
 import re
+import tempfile
 from tests.integration.test_base import AutomatedTest
 from tests.integration.test_utils import run_cli_command, verify_output_contains
 
@@ -231,7 +232,7 @@ class TestPersistentChat(AutomatedTest):
 
     def _test_nonexistent_pdf_file(self):
         """Test error handling with non-existent PDF file."""
-        nonexistent_pdf = "/tmp/nonexistent_file_12345.pdf"
+        nonexistent_pdf = os.path.join(tempfile.gettempdir(), "nonexistent_file_12345.pdf")
 
         # Run command with persistent chat and non-existent PDF
         # Use -pc n to force create new chat, avoiding selection menu
