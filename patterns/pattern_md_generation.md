@@ -1,5 +1,7 @@
 # Pattern: Pattern MD Generation
 
+**Tags:** `development`, `generation`, `automation`
+
 ## Purpose
 
 The purpose of this pattern is to automatically create well-structured pattern files in markdown format based on a concise goal description. It generates complete, standardized pattern files that follow the project's template structure, ensuring consistency across all pattern definitions while saving time and eliminating manual formatting errors.
@@ -102,9 +104,9 @@ model:
 
 format_instructions: |
   Your task is to create a complete pattern definition file in markdown format based on the provided goal description.
-  
+
   Follow these CRITICAL instructions for your response format:
-  
+
   {
     "results": {
       "pattern_explanation": "EXPLANATION_OF_THE_PATTERN",
