@@ -1,5 +1,7 @@
 # Pattern: IT Solution Market Analysis Generator
 
+**Tags:** `market-research`, `analysis`, `research`
+
 ## Purpose
 
 The purpose of `market_analysis_gen` is to generate comprehensive market analysis reports for IT solutions/products. This system evaluates and compares IT solutions based on their types, features, benefits, and market position. It ensures that the analysis is thorough and up-to-date by validating online references for accuracy, providing decision-makers with reliable insights for strategic planning and investment.

@@ -1,5 +1,7 @@
 # Pattern: Data Visualization
 
+**Tags:** `data-analysis`, `visualization`, `reporting`
+
 ## Purpose
 
 The purpose of `data_visualization` is to analyze and visualize data from various sources, helping users to gain insights through graphical representations. Try to figure out the best matching representation for the user.

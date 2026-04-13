@@ -208,13 +208,27 @@ class TestImageInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = (
+                "Image analysis with query and JSON detected Lorem Ipsum text"
+            )
+        elif not lorem_success:
+            message = (
+                f"Image analysis with query and JSON failed - Lorem Ipsum not found: {lorem_missing}"
+            )
+        elif not json_valid:
+            message = (
+                "Image analysis with query and JSON failed - invalid JSON format"
+            )
+        else:
+            message = (
+                "Image analysis with query and JSON failed - command returned error"
+            )
+
         self.add_result(
             "image_analysis_with_query_and_json",
             test_success,
-            "Image analysis with query and JSON detected Lorem Ipsum text" if test_success
-            else f"Image analysis with query and JSON failed - Lorem Ipsum not found: {lorem_missing}" if not lorem_success
-            else "Image analysis with query and JSON failed - invalid JSON format" if not json_valid
-            else "Image analysis with query and JSON failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img {test_image_path} -q \"{query}\" -f \"json\"",
                 "lorem_ipsum_found": lorem_success,
@@ -244,12 +258,23 @@ class TestImageInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = (
+                "Image analysis with query and model detected Lorem Ipsum text"
+            )
+        elif not success:
+            message = (
+                f"Image analysis with query and model failed - Lorem Ipsum not found: {missing}"
+            )
+        else:
+            message = (
+                "Image analysis with query and model failed - command returned error"
+            )
+
         self.add_result(
             "image_analysis_with_query_and_model",
             test_success,
-            "Image analysis with query and model detected Lorem Ipsum text" if test_success
-            else f"Image analysis with query and model failed - Lorem Ipsum not found: {missing}" if not success
-            else "Image analysis with query and model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img {test_image_path} -q \"{query}\" -m \"{model_name}\"",
                 "lorem_ipsum_found": success,
@@ -280,13 +305,27 @@ class TestImageInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = (
+                "Image analysis with JSON and model detected Lorem Ipsum text"
+            )
+        elif not lorem_success:
+            message = (
+                f"Image analysis with JSON and model failed - Lorem Ipsum not found: {lorem_missing}"
+            )
+        elif not json_valid:
+            message = (
+                "Image analysis with JSON and model failed - invalid JSON format"
+            )
+        else:
+            message = (
+                "Image analysis with JSON and model failed - command returned error"
+            )
+
         self.add_result(
             "image_analysis_with_json_and_model",
             test_success,
-            "Image analysis with JSON and model detected Lorem Ipsum text" if test_success
-            else f"Image analysis with JSON and model failed - Lorem Ipsum not found: {lorem_missing}" if not lorem_success
-            else "Image analysis with JSON and model failed - invalid JSON format" if not json_valid
-            else "Image analysis with JSON and model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -img {test_image_path} -f \"json\" -m \"{model_name}\"",
                 "lorem_ipsum_found": lorem_success,
@@ -305,7 +344,16 @@ class TestImageInput(AutomatedTest):
         model_name = "anthropic/claude-3-haiku"
 
         # Run image analysis with all options
-        stdout, stderr, return_code = run_cli_command(["-img", test_image_path, "-q", query, "-f", "json", "-m", model_name])
+        stdout, stderr, return_code = run_cli_command([
+            "-img",
+            test_image_path,
+            "-q",
+            query,
+            "-f",
+            "json",
+            "-m",
+            model_name,
+        ])
 
         # Check if Lorem Ipsum is detected
         expected_patterns = [

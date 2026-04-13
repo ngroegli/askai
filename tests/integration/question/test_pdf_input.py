@@ -62,12 +62,17 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "Basic PDF analysis detected Lorem Ipsum text"
+        elif not success:
+            message = f"Basic PDF analysis failed - Lorem Ipsum not found: {missing}"
+        else:
+            message = "Basic PDF analysis failed - command returned error"
+
         self.add_result(
             "pdf_analysis_basic",
             test_success,
-            "Basic PDF analysis detected Lorem Ipsum text" if test_success
-            else f"Basic PDF analysis failed - Lorem Ipsum not found: {missing}" if not success
-            else "Basic PDF analysis failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path}",
                 "lorem_ipsum_found": success,
@@ -94,12 +99,17 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "PDF analysis with query detected Lorem Ipsum text"
+        elif not success:
+            message = f"PDF analysis with query failed - Lorem Ipsum not found: {missing}"
+        else:
+            message = "PDF analysis with query failed - command returned error"
+
         self.add_result(
             "pdf_analysis_with_query",
             test_success,
-            "PDF analysis with query detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with query failed - Lorem Ipsum not found: {missing}" if not success
-            else "PDF analysis with query failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path} -q \"{query}\"",
                 "lorem_ipsum_found": success,
@@ -129,13 +139,19 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "PDF analysis with JSON format detected Lorem Ipsum text"
+        elif not lorem_success:
+            message = f"PDF analysis with JSON format failed - Lorem Ipsum not found: {lorem_missing}"
+        elif not json_valid:
+            message = "PDF analysis with JSON format failed - invalid JSON format"
+        else:
+            message = "PDF analysis with JSON format failed - command returned error"
+
         self.add_result(
             "pdf_analysis_with_json",
             test_success,
-            "PDF analysis with JSON format detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with JSON format failed - Lorem Ipsum not found: {lorem_missing}" if not lorem_success
-            else "PDF analysis with JSON format failed - invalid JSON format" if not json_valid
-            else "PDF analysis with JSON format failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path} -f \"json\"",
                 "lorem_ipsum_found": lorem_success,
@@ -164,12 +180,17 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "PDF analysis with model detected Lorem Ipsum text"
+        elif not success:
+            message = f"PDF analysis with model failed - Lorem Ipsum not found: {missing}"
+        else:
+            message = "PDF analysis with model failed - command returned error"
+
         self.add_result(
             "pdf_analysis_with_model",
             test_success,
-            "PDF analysis with model detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with model failed - Lorem Ipsum not found: {missing}" if not success
-            else "PDF analysis with model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path} -m \"{model_name}\"",
                 "lorem_ipsum_found": success,
@@ -200,13 +221,19 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "PDF analysis with query and JSON detected Lorem Ipsum text"
+        elif not lorem_success:
+            message = f"PDF analysis with query and JSON failed - Lorem Ipsum not found: {lorem_missing}"
+        elif not json_valid:
+            message = "PDF analysis with query and JSON failed - invalid JSON format"
+        else:
+            message = "PDF analysis with query and JSON failed - command returned error"
+
         self.add_result(
             "pdf_analysis_with_query_and_json",
             test_success,
-            "PDF analysis with query and JSON detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with query and JSON failed - Lorem Ipsum not found: {lorem_missing}" if not lorem_success
-            else "PDF analysis with query and JSON failed - invalid JSON format" if not json_valid
-            else "PDF analysis with query and JSON failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path} -q \"{query}\" -f \"json\"",
                 "lorem_ipsum_found": lorem_success,
@@ -236,12 +263,17 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = success and no_errors
 
+        if test_success:
+            message = "PDF analysis with query and model detected Lorem Ipsum text"
+        elif not success:
+            message = f"PDF analysis with query and model failed - Lorem Ipsum not found: {missing}"
+        else:
+            message = "PDF analysis with query and model failed - command returned error"
+
         self.add_result(
             "pdf_analysis_with_query_and_model",
             test_success,
-            "PDF analysis with query and model detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with query and model failed - Lorem Ipsum not found: {missing}" if not success
-            else "PDF analysis with query and model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path} -q \"{query}\" -m \"{model_name}\"",
                 "lorem_ipsum_found": success,
@@ -272,13 +304,19 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "PDF analysis with JSON and model detected Lorem Ipsum text"
+        elif not lorem_success:
+            message = f"PDF analysis with JSON and model failed - Lorem Ipsum not found: {lorem_missing}"
+        elif not json_valid:
+            message = "PDF analysis with JSON and model failed - invalid JSON format"
+        else:
+            message = "PDF analysis with JSON and model failed - command returned error"
+
         self.add_result(
             "pdf_analysis_with_json_and_model",
             test_success,
-            "PDF analysis with JSON and model detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with JSON and model failed - Lorem Ipsum not found: {lorem_missing}" if not lorem_success
-            else "PDF analysis with JSON and model failed - invalid JSON format" if not json_valid
-            else "PDF analysis with JSON and model failed - command returned error",
+            message,
             {
                 "command": f"askai.py -pdf {test_pdf_path} -f \"json\" -m \"{model_name}\"",
                 "lorem_ipsum_found": lorem_success,
@@ -297,7 +335,16 @@ class TestPdfInput(AutomatedTest):
         model_name = "anthropic/claude-3-haiku"
 
         # Run PDF analysis with all options
-        stdout, stderr, return_code = run_cli_command(["-pdf", test_pdf_path, "-q", query, "-f", "json", "-m", model_name])
+        stdout, stderr, return_code = run_cli_command([
+            "-pdf",
+            test_pdf_path,
+            "-q",
+            query,
+            "-f",
+            "json",
+            "-m",
+            model_name,
+        ])
 
         # Check if Lorem Ipsum is detected
         expected_patterns = [
@@ -312,22 +359,30 @@ class TestPdfInput(AutomatedTest):
         no_errors = return_code == 0
         test_success = lorem_success and no_errors and json_valid
 
+        if test_success:
+            message = "PDF analysis with all options detected Lorem Ipsum text"
+        elif not lorem_success:
+            message = f"PDF analysis with all options failed - Lorem Ipsum not found: {lorem_missing}"
+        elif not json_valid:
+            message = "PDF analysis with all options failed - invalid JSON format"
+        else:
+            message = "PDF analysis with all options failed - command returned error"
+
+        cmd = f"askai.py -pdf {test_pdf_path} -q \"{query}\" -f \"json\" -m \"{model_name}\""
+
         self.add_result(
             "pdf_analysis_with_all_options",
             test_success,
-            "PDF analysis with all options detected Lorem Ipsum text" if test_success
-            else f"PDF analysis with all options failed - Lorem Ipsum not found: {lorem_missing}" if not lorem_success
-            else "PDF analysis with all options failed - invalid JSON format" if not json_valid
-            else "PDF analysis with all options failed - command returned error",
+            message,
             {
-                "command": f"askai.py -pdf {test_pdf_path} -q \"{query}\" -f \"json\" -m \"{model_name}\"",
+                "command": cmd,
                 "lorem_ipsum_found": lorem_success,
                 "json_valid": json_valid,
                 "json_reason": json_reason,
                 "stdout": stdout[:500] + ("..." if len(stdout) > 500 else ""),
                 "stderr": stderr if stderr else "No errors",
-                "return_code": return_code
-            }
+                "return_code": return_code,
+            },
         )
 
     def _test_nonexistent_pdf(self):
@@ -346,11 +401,15 @@ class TestPdfInput(AutomatedTest):
         error_return_code = return_code != 0
         test_success = error_found or error_return_code
 
+        if test_success:
+            message = "Nonexistent PDF properly handled with error"
+        else:
+            message = f"Nonexistent PDF not handled properly - no error detected: {missing}"
+
         self.add_result(
             "nonexistent_pdf_error",
             test_success,
-            "Nonexistent PDF properly handled with error" if test_success
-            else f"Nonexistent PDF not handled properly - no error detected: {missing}",
+            message,
             {
                 "command": f"askai.py -pdf {nonexistent_path}",
                 "error_found": error_found,

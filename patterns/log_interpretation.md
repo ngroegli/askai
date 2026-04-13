@@ -1,5 +1,7 @@
 # Pattern: Log Interpretation
 
+**Tags:** `security`, `analysis`, `troubleshooting`
+
 ## Purpose
 
 The purpose of `log_interpretation` is to analyze raw log content to identify meaningful patterns, recurring structures, anomalies, and outliers. This assists in understanding system behavior, detecting unusual events, and supporting troubleshooting or threat detection efforts.

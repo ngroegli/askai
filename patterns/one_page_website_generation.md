@@ -1,5 +1,7 @@
 # Pattern: One Page Website Generation
 
+**Tags:** `development`, `generation`, `web-development`
+
 ## Purpose
 
 The purpose of `one_page_website_generation` is to rapidly generate lightweight, visually appealing, single-page websites with minimal complexity. It focuses on clean design, valid structure, and essential components such as navigation, branding, imagery, and contact information. Ideal for personal profiles, portfolios, small businesses, or project landing pages.
@@ -77,23 +79,23 @@ results:
     group: documentation
     example: |
       Website Generated: Brand Name
-      
+
       A single-page website has been created with the following files:
       - HTML Content: index.html
       - CSS Styles style.css
       - JavaScript script.js
-      
+
       Project Structure
       - index.html (main website)
       - style.css (styling)
       - script.js (JavaScript functionality)
       - assets/ (directory for images)
-      
+
       Preview Instructions
       1. Save all files in the same directory
       2. Open index.html in any web browser
       3. All files work together automatically
-  
+
   - name: html_content
     description: HTML content for the website
     type: html

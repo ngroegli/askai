@@ -256,6 +256,7 @@ class MessageBuilder:
         question: Optional[str] = None,
         file_input: Optional[str] = None,
         pattern_id: Optional[str] = None,
+        pattern_tags: Optional[List[str]] = None,
         pattern_input: Optional[Dict[str, Any]] = None,
         response_format: str = "rawtext",
         url: Optional[str] = None,
@@ -272,6 +273,7 @@ class MessageBuilder:
             question: Optional user question
             file_input: Optional path to input file
             pattern_id: Optional pattern ID to use
+            pattern_tags: Optional list of tags to filter patterns by
             pattern_input: Optional pattern inputs as dict
             response_format: Response format (rawtext, json, or md)
             url: Optional URL to analyze/summarize
@@ -415,9 +417,10 @@ class MessageBuilder:
                 question = None  # Mark question as consumed
 
         # Add pattern-specific context if specified
-        if pattern_id is not None:
+        # pattern_id can be: None (no pattern), 'SELECT' (need selection), or actual pattern_id
+        if pattern_id is not None or pattern_tags is not None:
             resolved_pattern_id = self._handle_pattern_context(
-                pattern_id, pattern_input, messages
+                pattern_id, pattern_tags, pattern_input, messages
             )
             if resolved_pattern_id is None:
                 return None, None
@@ -440,15 +443,17 @@ class MessageBuilder:
 
     def _handle_pattern_context(
         self,
-        pattern_id: str,
+        pattern_id: Optional[str],
+        pattern_tags: Optional[List[str]],
         pattern_input: Optional[Dict[str, Any]],
         messages: List[Dict[str, Any]]
     ) -> Optional[str]:
         # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         """Handle pattern-specific context and add to messages."""
         # Handle pattern selection if no specific ID was provided
-        if pattern_id == 'new':
-            resolved_pattern_id = self.pattern_manager.select_pattern()
+        # pattern_id can be None, empty string, 'new', or 'SELECT' when selection is needed
+        if not pattern_id or pattern_id in ['new', 'SELECT']:
+            resolved_pattern_id = self.pattern_manager.select_pattern(tags=pattern_tags)
             if resolved_pattern_id is None:
                 print("Pattern selection cancelled.")
                 return None
