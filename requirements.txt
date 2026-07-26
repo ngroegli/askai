@@ -5,7 +5,7 @@ rich==15.0.0
 textual==8.2.3
 termcolor==3.3.0
 jsonschema==4.26.0
-setuptools==82.0.1
+setuptools==83.0.0
 pytest==9.0.3
 pylint==4.0.5
 
