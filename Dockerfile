@@ -1,7 +1,7 @@
 # Multi-stage Docker build for AskAI API
 FROM python:3.12-alpine as base
 
-LABEL version="1.3.1"
+LABEL version="1.3.2"
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
